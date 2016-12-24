@@ -53,11 +53,24 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         put("Set", "Sets.newHashSet()");
     }};
 
+    private static Map<String, String> guavaImportMap = new HashMap<String, String>() {{
+        put("List", "com.google.common.collect.Lists");
+        put("Map", "com.google.common.collect.Maps");
+        put("Set", "com.google.common.collect.Sets");
+    }};
+
 
     private static Map<String, String> defaultCollections = new HashMap<String, String>() {{
         put("List", "ArrayList");
         put("Map", "HashMap");
         put("Set", "HashSet");
+    }};
+
+
+    private static Map<String, String> defaultImportMap = new HashMap<String, String>() {{
+        put("List", "java.util.ArrayList");
+        put("Map", "java.util.HashMap");
+        put("Set", "java.util.HashSet");
     }};
 
     @Override
@@ -79,7 +92,6 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         if (!(psiLocal instanceof PsiLocalVariable)) {
             return;
         }
-
 
         PsiLocalVariable localVariable = (PsiLocalVariable) psiLocal;
         PsiElement parent1 = localVariable.getParent();
@@ -103,7 +115,8 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
         StringBuilder builder = new StringBuilder();
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
-        Document document = psiDocumentManager.getDocument(element.getContainingFile());
+        PsiFile containingFile = element.getContainingFile();
+        Document document = psiDocumentManager.getDocument(containingFile);
         int statementOffset = parent1.getTextOffset();
         String splitText = "";
         int cur = statementOffset;
@@ -119,9 +132,10 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         splitText = "\n" + splitText;
 
 
+        List<String> newImportList = new ArrayList<>();
+
         boolean checkedGuava = false;
         boolean hasGuava = false;
-
         builder.append(splitText);
         for (PsiMethod method : methodList) {
             PsiParameter[] parameters = method.getParameterList().getParameters();
@@ -144,27 +158,32 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                         }
                         if (hasGuava) {
                             builder.append(guavaTypeMaps.get(paramInfo.getCollectName()));
+                            newImportList.add(guavaImportMap.get(paramInfo.getCollectName()));
                         } else {
                             //handleWithoutGuava.
                             String defaultImpl = defaultCollections.get(paramInfo.getCollectName());
-
-                            appendCollectNotEmpty(builder, paramInfo, defaultImpl);
+                            appendCollectNotEmpty(builder, paramInfo, defaultImpl, newImportList);
+                            newImportList.add(defaultImportMap.get(paramInfo.getCollectName()));
                         }
                         //使用自带的来搞起
                     } else {
                         if (paramInfo.getCollectName() != null) {
                             String defaultImpl = defaultCollections.get(paramInfo.getCollectName());
                             if (defaultImpl != null) {
-                                appendCollectNotEmpty(builder, paramInfo, defaultImpl);
+                                appendCollectNotEmpty(builder, paramInfo, defaultImpl, newImportList);
+                                newImportList.add(defaultImportMap.get(paramInfo.getCollectName()));
                             } else {
-                                appendCollectNotEmpty(builder, paramInfo, paramInfo.getCollectName());
+                                appendCollectNotEmpty(builder, paramInfo, paramInfo.getCollectName(), newImportList);
+                                newImportList.add(paramInfo.getCollectPackege());
                             }
                         } else {
                             //may be could get the construct of the class.
                             builder.append("new " + paramInfo.getParams().get(0).getRealName() + "()");
+                            newImportList.add(paramInfo.getParams().get(0).getRealPackage());
                         }
                     }
-                    // TODO: 2016/12/24 if not import, add import to it.
+
+
                 }
                 if (h != u) {
                     builder.append(",");
@@ -173,15 +192,52 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
             builder.append(");").append(splitText);
         }
 
+
         document.insertString(statementOffset + parent1.getText().length(), builder.toString());
         PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+        if (newImportList.size() > 0) {
+            Iterator<String> iterator = newImportList.iterator();
+            while (iterator.hasNext()) {
+                String u = iterator.next();
+                if (u.startsWith("java.lang")) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (newImportList.size() > 0) {
+            PsiJavaFile javaFile = (PsiJavaFile) containingFile;
+            PsiImportStatement[] importStatements = javaFile.getImportList().getImportStatements();
+            Set<String> containedSet = new HashSet<>();
+            for (PsiImportStatement s : importStatements) {
+                containedSet.add(s.getQualifiedName());
+            }
+            StringBuilder newImportText = new StringBuilder();
+            for (String newImport : newImportList) {
+                if (!containedSet.contains(newImport)) {
+                    newImportText.append("\nimport " + newImport + ";");
+                }
+            }
+            PsiPackageStatement packageStatement = javaFile.getPackageStatement();
+            int start = 0;
+            if (packageStatement != null) {
+                start = packageStatement.getTextLength() + packageStatement.getTextOffset();
+            }
+            String insertText = newImportText.toString();
+            if (StringUtils.isNotBlank(insertText)) {
+                document.insertString(start, insertText);
+                PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+            }
+        }
+
         return;
     }
 
-    private void appendCollectNotEmpty(StringBuilder builder, ParamInfo paramInfo, String defaultImpl) {
+    private void appendCollectNotEmpty(StringBuilder builder, ParamInfo paramInfo, String defaultImpl, List<String> newImportList) {
         builder.append("new " + defaultImpl + "<");
         for (int i = 0; i < paramInfo.getParams().size(); i++) {
             builder.append(paramInfo.getParams().get(i).getRealName());
+            newImportList.add(paramInfo.getParams().get(i).getRealPackage());
             if (i != paramInfo.getParams().size() - 1) {
                 builder.append(",");
             }
