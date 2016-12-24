@@ -43,6 +43,8 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         put("java.lang.Float", "0");
         put("double", "0");
         put("java.lang.Double", "0");
+        put("java.lang.Character", "\'\'");
+        put("char", "\'\'");
     }};
 
     @Override
@@ -110,12 +112,12 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
             int h = 0;
             for (PsiParameter parameter : parameters) {
                 h++;
-                String canonicalText = parameter.getType().getCanonicalText();
-                String ss = typeGeneratedMap.get(canonicalText);
+                String classType = parameter.getType().getCanonicalText();
+                String ss = typeGeneratedMap.get(classType);
                 if (ss != null) {
                     builder.append(ss);
                 } else {
-                    builder.append("new " + canonicalText + "()");
+                    builder.append("new " + classType + "()");
                 }
                 if (h != u) {
                     builder.append(",");
