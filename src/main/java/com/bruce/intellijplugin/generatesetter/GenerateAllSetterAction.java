@@ -47,6 +47,13 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         put("char", "\'\'");
     }};
 
+
+    private static Map<String, String> typeGeneratedImport = new HashMap<String, String>() {{
+        put("java.math.BigDecimal", "java.math.BigDecimal");
+        put("java.util.Date", "java.util.Date");
+    }};
+
+
     private static Map<String, String> guavaTypeMaps = new HashMap<String, String>() {{
         put("List", "Lists.newArrayList()");
         put("Map", "Maps.newHashMap()");
@@ -148,6 +155,10 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                 String ss = typeGeneratedMap.get(classType);
                 if (ss != null) {
                     builder.append(ss);
+                    String importType = typeGeneratedImport.get(classType);
+                    if (importType != null) {
+                        newImportList.add(importType);
+                    }
                 } else {
                     //shall check with import list to use.
                     ParamInfo paramInfo = extractParamInfo(classType);

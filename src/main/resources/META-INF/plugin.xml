@@ -2,7 +2,7 @@
     <id>com.bruce.intellijplugin.generatesetter</id>
     <name>GenerateAllSetter</name>
   <version>1.0</version>
-    <vendor email="gejun123456@gmail.com" url="https://">bruceGe</vendor>
+    <vendor email="gejun123456@gmail.com" url="https://github.com/gejun123456/intellij-generateAllSetMethod">bruceGe</vendor>
 
     <description><![CDATA[
       <p> generate a class all set method by alt+insert on the variable class</p>
@@ -13,10 +13,11 @@
       <p> user.setName("");</p>
       <p> user.setPassword("");</p>
       <p> support all your class set method including super class</p>
+      <p> view more on <a href ="https://github.com/gejun123456/intellij-generateAllSetMethod">https://github.com/gejun123456/intellij-generateAllSetMethod</a></p>
     ]]></description>
 
     <change-notes><![CDATA[
-      could first use.
+      auto add import.
     ]]>
     </change-notes>
 
