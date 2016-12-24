@@ -1,0 +1,34 @@
+<idea-plugin version="2">
+    <id>com.bruce.intellijplugin.generatesetter</id>
+    <name>GenerateAllSetter</name>
+  <version>1.0</version>
+    <vendor email="gejun123456@gmail.com" url="https://">bruceGe</vendor>
+
+    <description><![CDATA[
+      <p> generate a class all set method by alt+insert on the variable class</p>
+      <p> like a user class has setName, setPassword methods</p>
+      <p> <b>User</b> user = new User();</p>
+      <p> then alt+insert on User</p>
+      <p> will generate following</p>
+      <p> user.setName("");</p>
+      <p> user.setPassword("");</p>
+      <p> support all your class set method including super class</p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+      could first use.
+    ]]>
+    </change-notes>
+
+    <idea-version since-build="141.0"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+
+        <intentionAction>
+            <className>com.ccnode.codegenerator.view.GenerateMethodXmlAction</className>
+
+            <className>com.bruce.intellijplugin.generatesetter.GenerateAllSetterAction</className>
+
+        </intentionAction>
+    </extensions>
+</idea-plugin>

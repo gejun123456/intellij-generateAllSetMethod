@@ -1,0 +1,49 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'}
+    }
+}
+
+plugins {
+    id "org.jetbrains.intellij" version "0.1.10"
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.jetbrains.intellij'
+
+
+sourceCompatibility = 1.8
+
+
+intellij {
+//    IC-2016.1
+    version 'IC-14.1.4' //IntelliJ IDEA dependency
+    plugins 'coverage' //Bundled plugin dependencies
+    pluginName 'codehelper.generator'
+    updateSinceUntilBuild false
+//    需要来填写publish这块 类似
+//    publish {
+//        username 'AmailP'
+//        pluginId '7415'
+//    }
+}
+
+dependencies {
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+group 'com.bruce.intellijplugin'
+version '1.0'
