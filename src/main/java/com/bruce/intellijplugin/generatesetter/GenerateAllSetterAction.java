@@ -5,9 +5,12 @@ import com.bruce.intellijplugin.generatesetter.utils.PsiElementUtil;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.util.IncorrectOperationException;
@@ -15,10 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by bruce.ge on 2016/12/23.
@@ -45,6 +45,19 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         put("java.lang.Double", "0");
         put("java.lang.Character", "\'\'");
         put("char", "\'\'");
+    }};
+
+    private static Map<String, String> guavaTypeMaps = new HashMap<String, String>() {{
+        put("List", "Lists.newArrayList()");
+        put("Map", "Maps.newHashMap()");
+        put("Set", "Sets.newHashSet()");
+    }};
+
+
+    private static Map<String, String> defaultCollections = new HashMap<String, String>() {{
+        put("List", "ArrayList");
+        put("Map", "HashMap");
+        put("Set", "HashSet");
     }};
 
     @Override
@@ -104,6 +117,11 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
             text = document.getText(new TextRange(cur - 1, cur));
         }
         splitText = "\n" + splitText;
+
+
+        boolean checkedGuava = false;
+        boolean hasGuava = false;
+
         builder.append(splitText);
         for (PsiMethod method : methodList) {
             PsiParameter[] parameters = method.getParameterList().getParameters();
@@ -117,7 +135,36 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                 if (ss != null) {
                     builder.append(ss);
                 } else {
-                    builder.append("new " + classType + "()");
+                    //shall check with import list to use.
+                    ParamInfo paramInfo = extractParamInfo(classType);
+                    if (paramInfo.getCollectName() != null && guavaTypeMaps.containsKey(paramInfo.getCollectName())) {
+                        if (!checkedGuava) {
+                            hasGuava = checkGuavaExist(project, element);
+                            checkedGuava = true;
+                        }
+                        if (hasGuava) {
+                            builder.append(guavaTypeMaps.get(paramInfo.getCollectName()));
+                        } else {
+                            //handleWithoutGuava.
+                            String defaultImpl = defaultCollections.get(paramInfo.getCollectName());
+
+                            appendCollectNotEmpty(builder, paramInfo, defaultImpl);
+                        }
+                        //使用自带的来搞起
+                    } else {
+                        if (paramInfo.getCollectName() != null) {
+                            String defaultImpl = defaultCollections.get(paramInfo.getCollectName());
+                            if (defaultImpl != null) {
+                                appendCollectNotEmpty(builder, paramInfo, defaultImpl);
+                            } else {
+                                appendCollectNotEmpty(builder, paramInfo, paramInfo.getCollectName());
+                            }
+                        } else {
+                            //may be could get the construct of the class.
+                            builder.append("new " + paramInfo.getParams().get(0).getRealName() + "()");
+                        }
+                    }
+                    // TODO: 2016/12/24 if not import, add import to it.
                 }
                 if (h != u) {
                     builder.append(",");
@@ -129,6 +176,62 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         document.insertString(statementOffset + parent1.getText().length(), builder.toString());
         PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
         return;
+    }
+
+    private void appendCollectNotEmpty(StringBuilder builder, ParamInfo paramInfo, String defaultImpl) {
+        builder.append("new " + defaultImpl + "<");
+        for (int i = 0; i < paramInfo.getParams().size(); i++) {
+            builder.append(paramInfo.getParams().get(i).getRealName());
+            if (i != paramInfo.getParams().size() - 1) {
+                builder.append(",");
+            }
+        }
+        builder.append(">()");
+    }
+
+
+    private ParamInfo extractParamInfo(String classType) {
+        ParamInfo info = new ParamInfo();
+        int u = classType.indexOf("<");
+        if (u == -1) {
+            int i = classType.lastIndexOf(".");
+            List<RealParam> realParamList = new ArrayList<>();
+            RealParam real = new RealParam();
+            real.setRealName(classType.substring(i + 1));
+            real.setRealPackage(classType);
+            realParamList.add(real);
+            info.setParams(realParamList);
+        } else {
+            String collectpart = classType.substring(0, u);
+            String realClassPart = classType.substring(u + 1, classType.length() - 1);
+            int collectIndex = collectpart.lastIndexOf(".");
+            info.setCollectName(collectpart.substring(collectIndex + 1));
+            info.setCollectPackege(collectpart);
+            String[] split = realClassPart.split(",");
+            List<RealParam> params = new ArrayList<>();
+            if (split.length > 0) {
+                for (String m : split) {
+                    RealParam param = new RealParam();
+                    int realIndex = m.lastIndexOf(".");
+                    param.setRealPackage(m);
+                    param.setRealName(m.substring(realIndex + 1));
+                    params.add(param);
+                }
+            }
+            info.setParams(params);
+        }
+        return info;
+    }
+
+
+    private boolean checkGuavaExist(Project project, PsiElement element) {
+        PsiClass[] listss = PsiShortNamesCache.getInstance(project).getClassesByName("Lists", GlobalSearchScope.moduleScope(ModuleUtilCore.findModuleForPsiElement(element)));
+        for (PsiClass psiClass : listss) {
+            if (psiClass.getQualifiedName().equals("com.google.common.collect.Lists")) ;
+            return true;
+        }
+
+        return false;
     }
 
     private void addSetMethodToList(PsiClass psiClass, List<PsiMethod> methodList) {
