@@ -281,7 +281,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
 
     private boolean checkGuavaExist(Project project, PsiElement element) {
-        PsiClass[] listss = PsiShortNamesCache.getInstance(project).getClassesByName("Lists", GlobalSearchScope.moduleScope(ModuleUtilCore.findModuleForPsiElement(element)));
+        PsiClass[] listss = PsiShortNamesCache.getInstance(project).getClassesByName("Lists", GlobalSearchScope.moduleRuntimeScope(ModuleUtilCore.findModuleForPsiElement(element), false));
         for (PsiClass psiClass : listss) {
             if (psiClass.getQualifiedName().equals("com.google.common.collect.Lists")) ;
             return true;
