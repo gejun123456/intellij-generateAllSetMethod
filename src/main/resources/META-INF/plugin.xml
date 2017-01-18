@@ -5,7 +5,7 @@
     <vendor email="gejun123456@gmail.com" url="https://github.com/gejun123456/intellij-generateAllSetMethod">bruceGe</vendor>
 
     <description><![CDATA[
-      <p> generate a class all set method by alt+insert on the variable class</p>
+      <p> generate a class all setter method by alt+insert on the variable class</p>
       <p> like a user class has setName, setPassword methods</p>
       <p> <b>User</b> user = new User();</p>
       <p> then alt+insert on User</p>
@@ -17,7 +17,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      auto add import.
+    <p>1.2 fix suffix for long and double</p>
+    <p>1.1 auto add import</p>
     ]]>
     </change-notes>
 
