@@ -1,7 +1,6 @@
 package com.bruce.intellijplugin.generatesetter;
 
 import com.bruce.intellijplugin.generatesetter.utils.PsiDocumentUtils;
-import com.bruce.intellijplugin.generatesetter.utils.PsiElementUtil;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -11,8 +10,8 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
-import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
@@ -323,54 +322,24 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        if (editor.isViewer()) {
-            return false;
-        }
-        PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
-        if (psiFile == null) {
-            return false;
-        }
-        PsiUtilCore.ensureValid(psiFile);
-        if (!(psiFile instanceof PsiJavaFile)) {
-            return false;
-        }
-        PsiClass containingClass = PsiElementUtil.getContainingClass(element);
-        if (containingClass == null) {
+        PsiElement psiParent = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class, PsiMethod.class);
+        if (psiParent == null) {
             return false;
         }
 
-        if (containingClass.isInterface()) {
-            return false;
-        }
+        PsiClass psiClass  = null;
+        if (psiParent instanceof PsiLocalVariable) {
+            PsiLocalVariable psiLocal = (PsiLocalVariable) psiParent;
+            if (!(psiLocal.getParent() instanceof PsiDeclarationStatement)) {
+                return false;
+            }
+            psiClass = PsiTypesUtil.getPsiClass(psiLocal.getType());
 
-        if (!(element instanceof PsiIdentifier)) {
-            return false;
-        }
-        PsiElement parent = element.getParent();
-        if (!(parent instanceof PsiJavaCodeReferenceElement)) {
-            return false;
-        }
 
-        PsiJavaCodeReferenceElement javacode = (PsiJavaCodeReferenceElement) parent;
-        if (javacode instanceof PsiReferenceExpression) {
-            return false;
+        } else if (psiParent instanceof PsiMethod) {
+            PsiMethod method= (PsiMethod) psiParent;
+            psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
         }
-        PsiElement javaCodeParent = javacode.getParent();
-        if (!(javaCodeParent instanceof PsiTypeElement)) {
-            return false;
-        }
-
-        PsiElement psiLocal = javaCodeParent.getParent();
-        if (!(psiLocal instanceof PsiLocalVariable)) {
-            return false;
-        }
-
-        if (!(psiLocal.getParent() instanceof PsiDeclarationStatement)) {
-            return false;
-        }
-        PsiTypeElement psiType = (PsiTypeElement) javaCodeParent;
-        PsiType type = psiType.getType();
-        PsiClass psiClass = PsiTypesUtil.getPsiClass(type);
         if (psiClass == null) {
             return false;
         }
