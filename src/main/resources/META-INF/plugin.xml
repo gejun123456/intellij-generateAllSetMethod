@@ -1,14 +1,14 @@
 <idea-plugin version="2">
     <id>com.bruce.intellijplugin.generatesetter</id>
     <name>GenerateAllSetter</name>
-  <version>1.2</version>
+  <version>1.3</version>
     <vendor email="gejun123456@gmail.com" url="https://github.com/gejun123456/intellij-generateAllSetMethod">bruceGe</vendor>
 
     <description><![CDATA[
-      <p> generate a class all setter method by alt+insert on the variable class</p>
+      <p> generate a class all setter method by alt+enter on the variable class</p>
       <p> like a user class has setName, setPassword methods</p>
       <p> <b>User</b> user = new User();</p>
-      <p> then alt+insert on User</p>
+      <p> then alt+enter on User</p>
       <p> will generate following</p>
       <p> user.setName("");</p>
       <p> user.setPassword("");</p>
@@ -17,6 +17,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>1.3 fix doc
     <p>1.2 fix suffix for long and double</p>
     <p>1.1 auto add import</p>
     ]]>
