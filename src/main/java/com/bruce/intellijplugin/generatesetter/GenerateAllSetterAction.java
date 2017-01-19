@@ -2,6 +2,7 @@ package com.bruce.intellijplugin.generatesetter;
 
 import com.bruce.intellijplugin.generatesetter.utils.PsiDocumentUtils;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -26,6 +27,8 @@ import java.util.*;
 public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
     public static final String GENERATE_SETTER_METHOD = "generate all setter";
+    public static final String IS = "is";
+    public static final String GET = "get";
 
     private static Map<String, String> typeGeneratedMap = new HashMap<String, String>() {{
         put("boolean", "false");
@@ -107,16 +110,17 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         List<String> importList = Lists.newArrayList();
         String generateName = "vo";
         String insertText = "";
-        List<PsiMethod> getMethods = null;
+        GetInfo info = null;
         if (parameters.length > 0) {
             for (PsiParameter parameter : parameters) {
                 PsiType type = parameter.getType();
                 PsiClass parameterClass = PsiTypesUtil.getPsiClass(type);
-                if (parameterClass.getQualifiedName().startsWith("java.")) {
+                if (parameterClass == null || parameterClass.getQualifiedName().startsWith("java.")) {
                     continue;
                 } else {
-                    getMethods = extractGetMethod(psiClass);
+                    List<PsiMethod> getMethods = extractGetMethod(psiClass);
                     if (getMethods.size() > 0) {
+                        info = buildInfo(parameter, getMethods);
                         break;
                     }
                 }
@@ -124,6 +128,56 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         }
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
         Document document = psiDocumentManager.getDocument(element.getContainingFile());
+        String splitText = extractSplitText(method, document);
+        insertText += splitText + psiClass.getName() + " " + generateName + "= new " + psiClass.getName() + "();";
+        if (info == null) {
+            insertText += generateStringForNoParam(generateName, methods, splitText, importList, false);
+        } else {
+            insertText += generateStringForParam(generateName, methods, splitText, importList, false, info);
+        }
+        insertText += "return " + generateName + ";";
+        document.insertString(method.getBody().getTextOffset() + 1, insertText);
+        PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+    }
+
+    private String generateStringForParam(String generateName, List<PsiMethod> methodList, String splitText, List<String> newImportList, boolean hasGuava, GetInfo info) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(splitText);
+        for (PsiMethod method : methodList) {
+            if (method.getName().startsWith("set")) {
+                String fieldToLower = method.getName().substring(3).toLowerCase();
+                String s = info.getNameToMethodMap().get(fieldToLower);
+                if (s != null) {
+                    builder.append(generateName + "." + method.getName() + "(" + info.getParamName() + "." + s + "());");
+                } else {
+                    generateDefaultForOneMethod(generateName, newImportList, hasGuava, builder, method);
+                }
+            }
+            builder.append(splitText);
+        }
+        return builder.toString();
+    }
+
+    @NotNull
+    private GetInfo buildInfo(PsiParameter parameter, List<PsiMethod> getMethods) {
+        GetInfo info;
+        info = new GetInfo();
+        info.setParamName(parameter.getName());
+        info.setGetMethods(getMethods);
+        Map<String, String> nameToMethodMaps = Maps.newHashMap();
+        for (PsiMethod getMethod : getMethods) {
+            if (getMethod.getName().startsWith(IS)) {
+                nameToMethodMaps.put(getMethod.getName().substring(2).toLowerCase(), getMethod.getName());
+            } else if (getMethod.getName().startsWith(GET)) {
+                nameToMethodMaps.put(getMethod.getName().substring(3).toLowerCase(), getMethod.getName());
+            }
+        }
+        info.setNameToMethodMap(nameToMethodMaps);
+        return info;
+    }
+
+    @NotNull
+    private String extractSplitText(PsiMethod method, Document document) {
         int startOffset = method.getTextRange().getStartOffset();
         int lastLine = startOffset - 1;
         String text = document.getText(new TextRange(lastLine, lastLine + 1));
@@ -142,15 +196,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         } else {
             splitText = methodStartToLastLineText + "    ";
         }
-        if (getMethods == null) {
-            insertText += splitText + psiClass.getName() + " " + generateName + "= new " + psiClass.getName() + "();";
-            insertText += generateStringForNoParam(generateName, methods, splitText, importList, false);
-        } else {
-            //todo
-        }
-        insertText += "return " + generateName + ";";
-        document.insertString(method.getBody().getTextOffset() + 1, insertText);
-        PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+        return splitText;
     }
 
     private List<PsiMethod> extractGetMethod(PsiClass psiClass) {
@@ -254,61 +300,66 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         StringBuilder builder = new StringBuilder();
         builder.append(splitText);
         for (PsiMethod method : methodList) {
-            PsiParameter[] parameters = method.getParameterList().getParameters();
-            builder.append(generateName + "." + method.getName() + "(");
-            int u = parameters.length;
-            int h = 0;
-            for (PsiParameter parameter : parameters) {
-                h++;
-                String classType = parameter.getType().getCanonicalText();
-                String ss = typeGeneratedMap.get(classType);
-                if (ss != null) {
-                    builder.append(ss);
-                    String importType = typeGeneratedImport.get(classType);
-                    if (importType != null) {
-                        newImportList.add(importType);
-                    }
-                } else {
-                    //shall check with import list to use.
-                    ParamInfo paramInfo = extractParamInfo(classType);
-                    if (paramInfo.getCollectName() != null && guavaTypeMaps.containsKey(paramInfo.getCollectName())) {
-                        if (hasGuava) {
-                            builder.append(guavaTypeMaps.get(paramInfo.getCollectName()));
-                            newImportList.add(guavaImportMap.get(paramInfo.getCollectName()));
-                        } else {
-                            //handleWithoutGuava.
-                            String defaultImpl = defaultCollections.get(paramInfo.getCollectName());
-                            appendCollectNotEmpty(builder, paramInfo, defaultImpl, newImportList);
-                            newImportList.add(defaultImportMap.get(paramInfo.getCollectName()));
-                        }
-                        //使用自带的来搞起
-                    } else {
-                        if (paramInfo.getCollectName() != null) {
-                            String defaultImpl = defaultCollections.get(paramInfo.getCollectName());
-                            if (defaultImpl != null) {
-                                appendCollectNotEmpty(builder, paramInfo, defaultImpl, newImportList);
-                                newImportList.add(defaultImportMap.get(paramInfo.getCollectName()));
-                            } else {
-                                appendCollectNotEmpty(builder, paramInfo, paramInfo.getCollectName(), newImportList);
-                                newImportList.add(paramInfo.getCollectPackege());
-                            }
-                        } else {
-                            //may be could get the construct of the class.
-                            builder.append("new " + paramInfo.getParams().get(0).getRealName() + "()");
-                            newImportList.add(paramInfo.getParams().get(0).getRealPackage());
-                        }
-                    }
-
-
-                }
-                if (h != u) {
-                    builder.append(",");
-                }
-            }
-            builder.append(");").append(splitText);
+            generateDefaultForOneMethod(generateName, newImportList, hasGuava, builder, method);
+            builder.append(splitText);
         }
 
         return builder.toString();
+    }
+
+    private void generateDefaultForOneMethod(String generateName, List<String> newImportList, boolean hasGuava, StringBuilder builder, PsiMethod method) {
+        PsiParameter[] parameters = method.getParameterList().getParameters();
+        builder.append(generateName + "." + method.getName() + "(");
+        int u = parameters.length;
+        int h = 0;
+        for (PsiParameter parameter : parameters) {
+            h++;
+            String classType = parameter.getType().getCanonicalText();
+            String ss = typeGeneratedMap.get(classType);
+            if (ss != null) {
+                builder.append(ss);
+                String importType = typeGeneratedImport.get(classType);
+                if (importType != null) {
+                    newImportList.add(importType);
+                }
+            } else {
+                //shall check with import list to use.
+                ParamInfo paramInfo = extractParamInfo(classType);
+                if (paramInfo.getCollectName() != null && guavaTypeMaps.containsKey(paramInfo.getCollectName())) {
+                    if (hasGuava) {
+                        builder.append(guavaTypeMaps.get(paramInfo.getCollectName()));
+                        newImportList.add(guavaImportMap.get(paramInfo.getCollectName()));
+                    } else {
+                        //handleWithoutGuava.
+                        String defaultImpl = defaultCollections.get(paramInfo.getCollectName());
+                        appendCollectNotEmpty(builder, paramInfo, defaultImpl, newImportList);
+                        newImportList.add(defaultImportMap.get(paramInfo.getCollectName()));
+                    }
+                    //使用自带的来搞起
+                } else {
+                    if (paramInfo.getCollectName() != null) {
+                        String defaultImpl = defaultCollections.get(paramInfo.getCollectName());
+                        if (defaultImpl != null) {
+                            appendCollectNotEmpty(builder, paramInfo, defaultImpl, newImportList);
+                            newImportList.add(defaultImportMap.get(paramInfo.getCollectName()));
+                        } else {
+                            appendCollectNotEmpty(builder, paramInfo, paramInfo.getCollectName(), newImportList);
+                            newImportList.add(paramInfo.getCollectPackege());
+                        }
+                    } else {
+                        //may be could get the construct of the class.
+                        builder.append("new " + paramInfo.getParams().get(0).getRealName() + "()");
+                        newImportList.add(paramInfo.getParams().get(0).getRealPackage());
+                    }
+                }
+
+
+            }
+            if (h != u) {
+                builder.append(",");
+            }
+        }
+        builder.append(");");
     }
 
     private void appendCollectNotEmpty(StringBuilder builder, ParamInfo paramInfo, String defaultImpl, List<String> newImportList) {
@@ -389,7 +440,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
     private boolean isValidGetMethod(PsiMethod m) {
         return m.hasModifierProperty("public") && !m.hasModifierProperty("static") &&
-                (m.getName().startsWith("get") || m.getName().startsWith("is"));
+                (m.getName().startsWith(GET) || m.getName().startsWith(IS));
     }
 
     private String findNextNotNull(PsiTypeElement psiType, String defaultName) {
