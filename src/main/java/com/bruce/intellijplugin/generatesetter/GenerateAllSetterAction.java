@@ -108,7 +108,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         PsiParameter[] parameters = method.getParameterList().getParameters();
         List<PsiMethod> methods = extractSetMethods(psiClass);
         List<String> importList = Lists.newArrayList();
-        String generateName = "vo";
+        String generateName = psiClass.getName().substring(0, 1).toLowerCase() + psiClass.getName().substring(1);
         String insertText = "";
         GetInfo info = null;
         if (parameters.length > 0) {
@@ -119,6 +119,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                     continue;
                 } else {
                     List<PsiMethod> getMethods = extractGetMethod(parameterClass);
+                    // TODO: 2017/1/20 may be i can extract get memthod from all parameter
                     if (getMethods.size() > 0) {
                         info = buildInfo(parameter, getMethods);
                         break;
@@ -494,7 +495,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
             return false;
         }
         String qualifiedName = psiClass.getQualifiedName();
-        if (qualifiedName.startsWith("java.")) {
+        if (qualifiedName == null || qualifiedName.startsWith("java.")) {
             return false;
         }
         return true;
