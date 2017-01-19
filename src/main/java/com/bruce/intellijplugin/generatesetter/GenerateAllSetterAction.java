@@ -130,7 +130,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         Document document = psiDocumentManager.getDocument(element.getContainingFile());
         String splitText = extractSplitText(method, document);
         insertText += splitText + psiClass.getName() + " " + generateName + "= new " + psiClass.getName() + "();";
-        boolean hasGuava = checkGuavaExist(project,element);
+        boolean hasGuava = checkGuavaExist(project, element);
         if (info == null) {
             insertText += generateStringForNoParam(generateName, methods, splitText, importList, hasGuava);
         } else {
@@ -476,6 +476,8 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
             PsiMethod method = (PsiMethod) psiParent;
             psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
         }
+        //todo when psiClass is null, it can be list ect. can generate it as well could use method.getReturnType.getCanolicText to check for type ect.
+        //todo may check with the cursor if it on the method definition area instead of everywhere in method.
         while (isValid(psiClass)) {
             for (PsiMethod m : psiClass.getMethods()) {
                 if (isValidSetMethod(m)) {
