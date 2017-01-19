@@ -1,6 +1,7 @@
 package com.bruce.intellijplugin.generatesetter;
 
 import com.bruce.intellijplugin.generatesetter.utils.PsiDocumentUtils;
+import com.google.common.collect.Lists;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -81,45 +82,98 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
-        PsiElement parent = element.getParent();
-        if (parent == null) {
+        PsiElement psiParent = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class, PsiMethod.class);
+        if (psiParent == null) {
             return;
         }
-        PsiElement javaParent = parent.getParent();
-        if (javaParent == null) {
-            return;
-        }
+        if (psiParent instanceof PsiLocalVariable) {
+            PsiLocalVariable psiLocal = (PsiLocalVariable) psiParent;
+            if (!(psiLocal.getParent() instanceof PsiDeclarationStatement)) {
+                return;
+            }
+            handleWithLocalVariable(psiLocal, project, element);
 
-        if (!(javaParent instanceof PsiTypeElement)) {
-            return;
+        } else if (psiParent instanceof PsiMethod) {
+            PsiMethod method = (PsiMethod) psiParent;
+            handleWithMethod(method, project, element);
         }
+    }
 
-        PsiElement psiLocal = javaParent.getParent();
-        if (!(psiLocal instanceof PsiLocalVariable)) {
-            return;
+    private void handleWithMethod(PsiMethod method, Project project, PsiElement element) {
+        PsiType returnType = method.getReturnType();
+        PsiClass psiClass = PsiTypesUtil.getPsiClass(returnType);
+        PsiParameter[] parameters = method.getParameterList().getParameters();
+        List<PsiMethod> methods = extractSetMethods(psiClass);
+        List<String> importList = Lists.newArrayList();
+        String generateName = "vo";
+        String insertText = "";
+        List<PsiMethod> getMethods = null;
+        if (parameters.length > 0) {
+            for (PsiParameter parameter : parameters) {
+                PsiType type = parameter.getType();
+                PsiClass parameterClass = PsiTypesUtil.getPsiClass(type);
+                if (parameterClass.getQualifiedName().startsWith("java.")) {
+                    continue;
+                } else {
+                    getMethods = extractGetMethod(psiClass);
+                    if (getMethods.size() > 0) {
+                        break;
+                    }
+                }
+            }
         }
+        PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
+        Document document = psiDocumentManager.getDocument(element.getContainingFile());
+        int startOffset = method.getTextRange().getStartOffset();
+        int lastLine = startOffset - 1;
+        String text = document.getText(new TextRange(lastLine, lastLine + 1));
+        boolean isTable = false;
+        while (!text.equals("\n")) {
+            if (text.equals('\t')) {
+                isTable = true;
+            }
+            lastLine--;
+            text = document.getText(new TextRange(lastLine, lastLine + 1));
+        }
+        String methodStartToLastLineText = document.getText(new TextRange(lastLine, startOffset));
+        String splitText = null;
+        if (isTable) {
+            splitText += methodStartToLastLineText + "\t";
+        } else {
+            splitText = methodStartToLastLineText + "    ";
+        }
+        if (getMethods == null) {
+            insertText += splitText + psiClass.getName() + " " + generateName + "= new " + psiClass.getName() + "();";
+            insertText += generateStringForNoParam(generateName, methods, splitText, importList, false);
+        } else {
+            //todo
+        }
+        insertText += "return " + generateName + ";";
+        document.insertString(method.getBody().getTextOffset() + 1, insertText);
+        PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+    }
 
-        PsiLocalVariable localVariable = (PsiLocalVariable) psiLocal;
+    private List<PsiMethod> extractGetMethod(PsiClass psiClass) {
+        List<PsiMethod> methodList = new ArrayList<>();
+        while (isValid(psiClass)) {
+            addGettMethodToList(psiClass, methodList);
+            psiClass = psiClass.getSuperClass();
+        }
+        return methodList;
+    }
+
+
+    private void handleWithLocalVariable(PsiLocalVariable localVariable, Project project, PsiElement element) {
         PsiElement parent1 = localVariable.getParent();
         if (!(parent1 instanceof PsiDeclarationStatement)) {
             return;
         }
         PsiClass psiClass = PsiTypesUtil.getPsiClass(localVariable.getType());
         String generateName = localVariable.getName();
-        List<PsiMethod> methodList = new ArrayList<>();
-        while (!psiClass.getQualifiedName().equals("java.lang.Object")) {
-            addSetMethodToList(psiClass, methodList);
-            psiClass = psiClass.getSuperClass();
-            if (psiClass == null) {
-                break;
-            }
-        }
-
+        List<PsiMethod> methodList = extractSetMethods(psiClass);
         if (methodList.size() == 0) {
             return;
         }
-
-        StringBuilder builder = new StringBuilder();
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
         PsiFile containingFile = element.getContainingFile();
         Document document = psiDocumentManager.getDocument(containingFile);
@@ -139,9 +193,65 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
 
         List<String> newImportList = new ArrayList<>();
+        boolean hasGuava = checkGuavaExist(project, element);
 
-        boolean checkedGuava = false;
-        boolean hasGuava = false;
+        String buildString = generateStringForNoParam(generateName, methodList, splitText, newImportList, hasGuava);
+        document.insertString(statementOffset + parent1.getText().length(), buildString);
+        PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+        addImportToFile(psiDocumentManager, (PsiJavaFile) containingFile, document, newImportList);
+        return;
+    }
+
+    private void addImportToFile(PsiDocumentManager psiDocumentManager, PsiJavaFile containingFile, Document document, List<String> newImportList) {
+        if (newImportList.size() > 0) {
+            Iterator<String> iterator = newImportList.iterator();
+            while (iterator.hasNext()) {
+                String u = iterator.next();
+                if (u.startsWith("java.lang")) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (newImportList.size() > 0) {
+            PsiJavaFile javaFile = containingFile;
+            PsiImportStatement[] importStatements = javaFile.getImportList().getImportStatements();
+            Set<String> containedSet = new HashSet<>();
+            for (PsiImportStatement s : importStatements) {
+                containedSet.add(s.getQualifiedName());
+            }
+            StringBuilder newImportText = new StringBuilder();
+            for (String newImport : newImportList) {
+                if (!containedSet.contains(newImport)) {
+                    newImportText.append("\nimport " + newImport + ";");
+                }
+            }
+            PsiPackageStatement packageStatement = javaFile.getPackageStatement();
+            int start = 0;
+            if (packageStatement != null) {
+                start = packageStatement.getTextLength() + packageStatement.getTextOffset();
+            }
+            String insertText = newImportText.toString();
+            if (StringUtils.isNotBlank(insertText)) {
+                document.insertString(start, insertText);
+                PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+            }
+        }
+    }
+
+    @NotNull
+    private List<PsiMethod> extractSetMethods(PsiClass psiClass) {
+        List<PsiMethod> methodList = new ArrayList<>();
+        while (isValid(psiClass)) {
+            addSetMethodToList(psiClass, methodList);
+            psiClass = psiClass.getSuperClass();
+        }
+        return methodList;
+    }
+
+    @NotNull
+    private String generateStringForNoParam(String generateName, List<PsiMethod> methodList, String splitText, List<String> newImportList, boolean hasGuava) {
+        StringBuilder builder = new StringBuilder();
         builder.append(splitText);
         for (PsiMethod method : methodList) {
             PsiParameter[] parameters = method.getParameterList().getParameters();
@@ -162,10 +272,6 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                     //shall check with import list to use.
                     ParamInfo paramInfo = extractParamInfo(classType);
                     if (paramInfo.getCollectName() != null && guavaTypeMaps.containsKey(paramInfo.getCollectName())) {
-                        if (!checkedGuava) {
-                            hasGuava = checkGuavaExist(project, element);
-                            checkedGuava = true;
-                        }
                         if (hasGuava) {
                             builder.append(guavaTypeMaps.get(paramInfo.getCollectName()));
                             newImportList.add(guavaImportMap.get(paramInfo.getCollectName()));
@@ -202,45 +308,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
             builder.append(");").append(splitText);
         }
 
-
-        document.insertString(statementOffset + parent1.getText().length(), builder.toString());
-        PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
-        if (newImportList.size() > 0) {
-            Iterator<String> iterator = newImportList.iterator();
-            while (iterator.hasNext()) {
-                String u = iterator.next();
-                if (u.startsWith("java.lang")) {
-                    iterator.remove();
-                }
-            }
-        }
-
-        if (newImportList.size() > 0) {
-            PsiJavaFile javaFile = (PsiJavaFile) containingFile;
-            PsiImportStatement[] importStatements = javaFile.getImportList().getImportStatements();
-            Set<String> containedSet = new HashSet<>();
-            for (PsiImportStatement s : importStatements) {
-                containedSet.add(s.getQualifiedName());
-            }
-            StringBuilder newImportText = new StringBuilder();
-            for (String newImport : newImportList) {
-                if (!containedSet.contains(newImport)) {
-                    newImportText.append("\nimport " + newImport + ";");
-                }
-            }
-            PsiPackageStatement packageStatement = javaFile.getPackageStatement();
-            int start = 0;
-            if (packageStatement != null) {
-                start = packageStatement.getTextLength() + packageStatement.getTextOffset();
-            }
-            String insertText = newImportText.toString();
-            if (StringUtils.isNotBlank(insertText)) {
-                document.insertString(start, insertText);
-                PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
-            }
-        }
-
-        return;
+        return builder.toString();
     }
 
     private void appendCollectNotEmpty(StringBuilder builder, ParamInfo paramInfo, String defaultImpl, List<String> newImportList) {
@@ -309,6 +377,21 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         }
     }
 
+
+    private void addGettMethodToList(PsiClass psiClass, List<PsiMethod> methodList) {
+        PsiMethod[] methods = psiClass.getMethods();
+        for (PsiMethod method : methods) {
+            if (isValidGetMethod(method)) {
+                methodList.add(method);
+            }
+        }
+    }
+
+    private boolean isValidGetMethod(PsiMethod m) {
+        return m.hasModifierProperty("public") && !m.hasModifierProperty("static") &&
+                (m.getName().startsWith("get") || m.getName().startsWith("is"));
+    }
+
     private String findNextNotNull(PsiTypeElement psiType, String defaultName) {
         PsiElement nextSibling = psiType.getNextSibling();
         while (nextSibling != null && StringUtils.isBlank(nextSibling.getText())) {
@@ -327,7 +410,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
             return false;
         }
 
-        PsiClass psiClass  = null;
+        PsiClass psiClass = null;
         if (psiParent instanceof PsiLocalVariable) {
             PsiLocalVariable psiLocal = (PsiLocalVariable) psiParent;
             if (!(psiLocal.getParent() instanceof PsiDeclarationStatement)) {
@@ -337,24 +420,36 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
 
         } else if (psiParent instanceof PsiMethod) {
-            PsiMethod method= (PsiMethod) psiParent;
+            PsiMethod method = (PsiMethod) psiParent;
             psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
         }
-        if (psiClass == null) {
-            return false;
-        }
-        while (!psiClass.getQualifiedName().equals("java.lang.Object")) {
+        while (isValid(psiClass)) {
             for (PsiMethod m : psiClass.getMethods()) {
                 if (isValidSetMethod(m)) {
                     return true;
                 }
             }
             psiClass = psiClass.getSuperClass();
-            if (psiClass == null) {
-                break;
-            }
         }
         return false;
+    }
+
+    private boolean isValid(PsiClass psiClass) {
+        if (psiClass == null) {
+            return false;
+        }
+        String qualifiedName = psiClass.getQualifiedName();
+        if (qualifiedName.startsWith("java.")) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean notObjectClass(PsiClass psiClass) {
+        if (psiClass.getQualifiedName().equals("java.lang.Object")) {
+            return false;
+        }
+        return true;
     }
 
     private boolean isValidSetMethod(PsiMethod m) {
