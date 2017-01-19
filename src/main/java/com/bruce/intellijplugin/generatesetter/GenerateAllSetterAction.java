@@ -118,7 +118,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                 if (parameterClass == null || parameterClass.getQualifiedName().startsWith("java.")) {
                     continue;
                 } else {
-                    List<PsiMethod> getMethods = extractGetMethod(psiClass);
+                    List<PsiMethod> getMethods = extractGetMethod(parameterClass);
                     if (getMethods.size() > 0) {
                         info = buildInfo(parameter, getMethods);
                         break;
@@ -130,14 +130,16 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         Document document = psiDocumentManager.getDocument(element.getContainingFile());
         String splitText = extractSplitText(method, document);
         insertText += splitText + psiClass.getName() + " " + generateName + "= new " + psiClass.getName() + "();";
+        boolean hasGuava = checkGuavaExist(project,element);
         if (info == null) {
-            insertText += generateStringForNoParam(generateName, methods, splitText, importList, false);
+            insertText += generateStringForNoParam(generateName, methods, splitText, importList, hasGuava);
         } else {
-            insertText += generateStringForParam(generateName, methods, splitText, importList, false, info);
+            insertText += generateStringForParam(generateName, methods, splitText, importList, hasGuava, info);
         }
         insertText += "return " + generateName + ";";
         document.insertString(method.getBody().getTextOffset() + 1, insertText);
         PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+        addImportToFile(psiDocumentManager, (PsiJavaFile) element.getContainingFile(), document, importList);
     }
 
     private String generateStringForParam(String generateName, List<PsiMethod> methodList, String splitText, List<String> newImportList, boolean hasGuava, GetInfo info) {
