@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
+import com.intellij.psi.util.PsiTypesUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,20 +32,22 @@ public class PsiToolUtils {
     }
 
     @NotNull
-    public static ParamInfo extractParamInfo(String classType) {
+    public static ParamInfo extractParamInfo(PsiType psiType) {
+        String typeFullName = psiType.getCanonicalText();
         ParamInfo info = new ParamInfo();
-        int u = classType.indexOf("<");
+        info.setReturnType(PsiTypesUtil.getPsiClass(psiType));
+        int u = typeFullName.indexOf("<");
         if (u == -1) {
-            int i = classType.lastIndexOf(".");
+            int i = typeFullName.lastIndexOf(".");
             List<RealParam> realParamList = new ArrayList<>();
             RealParam real = new RealParam();
-            real.setRealName(classType.substring(i + 1));
-            real.setRealPackage(classType);
+            real.setRealName(typeFullName.substring(i + 1));
+            real.setRealPackage(typeFullName);
             realParamList.add(real);
             info.setParams(realParamList);
         } else {
-            String collectpart = classType.substring(0, u);
-            String realClassPart = classType.substring(u + 1, classType.length() - 1);
+            String collectpart = typeFullName.substring(0, u);
+            String realClassPart = typeFullName.substring(u + 1, typeFullName.length() - 1);
             int collectIndex = collectpart.lastIndexOf(".");
             info.setCollectName(collectpart.substring(collectIndex + 1));
             info.setCollectPackege(collectpart);
@@ -99,5 +102,10 @@ public class PsiToolUtils {
                 PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
             }
         }
+    }
+
+    @NotNull
+    public static String lowerStart(String name) {
+        return name.substring(0, 1).toLowerCase() + name.substring(1);
     }
 }

@@ -115,12 +115,12 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
         Document document = psiDocumentManager.getDocument(element.getContainingFile());
         String splitText = extractSplitText(method, document);
-        ParamInfo returnTypeInfo = PsiToolUtils.extractParamInfo(method.getReturnType().getCanonicalText());
+        ParamInfo returnTypeInfo = PsiToolUtils.extractParamInfo(method.getReturnType());
         InsertDto dto = null;
         boolean hasGuava = PsiToolUtils.checkGuavaExist(project, element);
         if (returnTypeInfo.getCollectPackege() != null && handlerMap.containsKey(returnTypeInfo.getCollectPackege())) {
             //
-            dto = handlerMap.get(returnTypeInfo.getCollectPackege()).handle(returnTypeInfo, splitText, method.getParameterList().getParameters(),hasGuava);
+            dto = handlerMap.get(returnTypeInfo.getCollectPackege()).handle(returnTypeInfo, splitText, method.getParameterList().getParameters(), hasGuava);
         } else {
             PsiClass returnTypeClass = PsiTypesUtil.getPsiClass(method.getReturnType());
             dto = getBaseInsertDto(splitText, hasGuava, method.getParameterList().getParameters(), returnTypeClass);
@@ -141,7 +141,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         PsiParameter[] parameters = parameters1;
         List<PsiMethod> methods = extractSetMethods(psiClass);
         List<String> importList = Lists.newArrayList();
-        String generateName = psiClass.getName().substring(0, 1).toLowerCase() + psiClass.getName().substring(1);
+        String generateName = PsiToolUtils.lowerStart(psiClass.getName());
         GetInfo info = null;
         if (parameters.length > 0) {
             for (PsiParameter parameter : parameters) {
@@ -319,7 +319,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                 }
             } else {
                 //shall check with import list to use.
-                ParamInfo paramInfo = PsiToolUtils.extractParamInfo(classType);
+                ParamInfo paramInfo = PsiToolUtils.extractParamInfo(parameter.getType());
                 if (paramInfo.getCollectName() != null && guavaTypeMaps.containsKey(paramInfo.getCollectName())) {
                     if (hasGuava) {
                         builder.append(guavaTypeMaps.get(paramInfo.getCollectName()));
@@ -424,8 +424,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         } else if (psiParent instanceof PsiMethod) {
             PsiMethod method = (PsiMethod) psiParent;
             psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
-            String returnTypeFullName = method.getReturnType().getCanonicalText();
-            ParamInfo returnTypeInfo = PsiToolUtils.extractParamInfo(returnTypeFullName);
+            ParamInfo returnTypeInfo = PsiToolUtils.extractParamInfo(method.getReturnType());
             if (returnTypeInfo.getCollectPackege() != null && handlerMap.containsKey(returnTypeInfo.getCollectPackege())) {
                 return true;
             }

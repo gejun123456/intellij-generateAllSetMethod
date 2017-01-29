@@ -1,5 +1,6 @@
 package generateAllSetter;
 
+import com.bruce.intellijplugin.generatesetter.complexreturntype.ListReturnTypeHandler;
 import org.junit.Test;
 
 /**
@@ -10,6 +11,6 @@ import org.junit.Test;
 public class ListReturnTest {
     @Test
     public void test(){
-
+        ListReturnTypeHandler listReturnTypeHandler = new ListReturnTypeHandler();
     }
 }
