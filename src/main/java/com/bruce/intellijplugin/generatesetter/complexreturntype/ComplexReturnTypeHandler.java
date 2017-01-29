@@ -12,5 +12,5 @@ import org.jetbrains.annotations.NotNull;
 public interface ComplexReturnTypeHandler {
     //the generate class for the usage.
     @NotNull
-    InsertDto handle(ParamInfo returnParamInfo, String splitText, PsiParameter[] parameters);
+    InsertDto handle(ParamInfo returnParamInfo, String splitText, PsiParameter[] parameters,boolean hasGuava);
 }

@@ -11,9 +11,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public class OptionalReturnTypeHandler implements ComplexReturnTypeHandler {
 
-    @Override
+
     @NotNull
-    public InsertDto handle(ParamInfo returnParamInfo, String splitText, PsiParameter[] parameters) {
+    @Override
+    public InsertDto handle(ParamInfo returnParamInfo, String splitText, PsiParameter[] parameters, boolean hasGuava) {
         return null;
     }
 }

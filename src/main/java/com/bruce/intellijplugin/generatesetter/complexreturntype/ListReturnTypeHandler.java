@@ -11,9 +11,12 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
 
-    @Override
+
     @NotNull
-    public InsertDto handle(ParamInfo returnParamInfo, String splitText, PsiParameter[] parameters) {
-        return null;
+    @Override
+    public InsertDto handle(ParamInfo returnParamInfo, String splitText, PsiParameter[] parameters, boolean hasGuava) {
+        InsertDto insertDto = new InsertDto();
+        insertDto.setAddedText(splitText + "List<Hehe> hehe = Lists.newArrayList();");
+        return insertDto;
     }
 }

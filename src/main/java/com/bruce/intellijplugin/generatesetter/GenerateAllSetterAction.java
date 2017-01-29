@@ -114,12 +114,13 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         String splitText = extractSplitText(method, document);
         ParamInfo returnTypeInfo = PsiToolUtils.extractParamInfo(method.getReturnType().getCanonicalText());
         InsertDto dto = null;
+        boolean hasGuava = PsiToolUtils.checkGuavaExist(project, element);
         if (returnTypeInfo.getCollectPackege() != null && handlerMap.containsKey(returnTypeInfo.getCollectPackege())) {
             //
-            dto = handlerMap.get(returnTypeInfo.getCollectPackege()).handle(returnTypeInfo, splitText, method.getParameterList().getParameters());
+            dto = handlerMap.get(returnTypeInfo.getCollectPackege()).handle(returnTypeInfo, splitText, method.getParameterList().getParameters(),hasGuava);
         } else {
             PsiClass returnTypeClass = PsiTypesUtil.getPsiClass(method.getReturnType());
-            dto = getBaseInsertDto(splitText, PsiToolUtils.checkGuavaExist(project, element), method.getParameterList().getParameters(), returnTypeClass);
+            dto = getBaseInsertDto(splitText, hasGuava, method.getParameterList().getParameters(), returnTypeClass);
         }
         if (dto.getAddedText() != null) {
             document.insertString(method.getBody().getTextOffset() + 1, dto.getAddedText());
