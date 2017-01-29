@@ -2,6 +2,7 @@ package com.bruce.intellijplugin.generatesetter.utils;
 
 import com.bruce.intellijplugin.generatesetter.ParamInfo;
 import com.bruce.intellijplugin.generatesetter.RealParam;
+import com.bruce.intellijplugin.generatesetter.complexreturntype.WrappInfo;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
@@ -38,27 +39,24 @@ public class PsiToolUtils {
         info.setReturnType(PsiTypesUtil.getPsiClass(psiType));
         int u = typeFullName.indexOf("<");
         if (u == -1) {
-            int i = typeFullName.lastIndexOf(".");
             List<RealParam> realParamList = new ArrayList<>();
             RealParam real = new RealParam();
-            real.setRealName(typeFullName.substring(i + 1));
+            real.setRealName(extractShortName(typeFullName));
             real.setRealPackage(typeFullName);
             realParamList.add(real);
             info.setParams(realParamList);
         } else {
             String collectpart = typeFullName.substring(0, u);
             String realClassPart = typeFullName.substring(u + 1, typeFullName.length() - 1);
-            int collectIndex = collectpart.lastIndexOf(".");
-            info.setCollectName(collectpart.substring(collectIndex + 1));
+            info.setCollectName(extractShortName(collectpart));
             info.setCollectPackege(collectpart);
             String[] split = realClassPart.split(",");
             List<RealParam> params = new ArrayList<>();
             if (split.length > 0) {
                 for (String m : split) {
                     RealParam param = new RealParam();
-                    int realIndex = m.lastIndexOf(".");
                     param.setRealPackage(m);
-                    param.setRealName(m.substring(realIndex + 1));
+                    param.setRealName(extractShortName(m));
                     params.add(param);
                 }
             }
@@ -107,5 +105,21 @@ public class PsiToolUtils {
     @NotNull
     public static String lowerStart(String name) {
         return name.substring(0, 1).toLowerCase() + name.substring(1);
+    }
+
+    public static WrappInfo extractWrappInfo(String typeFullName) {
+        int u = typeFullName.indexOf("<");
+        if (u == -1) {
+            return null;
+        }
+        WrappInfo info = new WrappInfo();
+        String fullName = typeFullName.substring(0, u);
+        info.setQualifyTypeName(fullName);
+        info.setShortTypeName(extractShortName(fullName));
+        return info;
+    }
+
+    private static String extractShortName(String fullName) {
+        return fullName.substring(fullName.lastIndexOf(".") + 1);
     }
 }

@@ -136,7 +136,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
     @NotNull
-    private InsertDto getBaseInsertDto(String splitText, boolean hasGuava, PsiParameter[] parameters1, PsiClass psiClass) {
+    private static InsertDto getBaseInsertDto(String splitText, boolean hasGuava, PsiParameter[] parameters1, PsiClass psiClass) {
         InsertDto dto = new InsertDto();
         PsiParameter[] parameters = parameters1;
         List<PsiMethod> methods = extractSetMethods(psiClass);
@@ -159,8 +159,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                 }
             }
         }
-        String insertText = "";
-        insertText += splitText + psiClass.getName() + " " + generateName + "= new " + psiClass.getName() + "();";
+        String insertText = splitText + psiClass.getName() + " " + generateName + "= new " + psiClass.getName() + "();";
         if (info == null) {
             insertText += generateStringForNoParam(generateName, methods, splitText, importList, hasGuava);
         } else {
@@ -172,7 +171,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         return dto;
     }
 
-    private String generateStringForParam(String generateName, List<PsiMethod> methodList, String splitText, List<String> newImportList, boolean hasGuava, GetInfo info) {
+    private static String generateStringForParam(String generateName, List<PsiMethod> methodList, String splitText, List<String> newImportList, boolean hasGuava, GetInfo info) {
         StringBuilder builder = new StringBuilder();
         builder.append(splitText);
         for (PsiMethod method : methodList) {
@@ -191,7 +190,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
     @NotNull
-    private GetInfo buildInfo(PsiParameter parameter, List<PsiMethod> getMethods) {
+    private static GetInfo buildInfo(PsiParameter parameter, List<PsiMethod> getMethods) {
         GetInfo info;
         info = new GetInfo();
         info.setParamName(parameter.getName());
@@ -209,7 +208,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
     @NotNull
-    private String extractSplitText(PsiMethod method, Document document) {
+    private static String extractSplitText(PsiMethod method, Document document) {
         int startOffset = method.getTextRange().getStartOffset();
         int lastLine = startOffset - 1;
         String text = document.getText(new TextRange(lastLine, lastLine + 1));
@@ -231,7 +230,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         return splitText;
     }
 
-    private List<PsiMethod> extractGetMethod(PsiClass psiClass) {
+    private static List<PsiMethod> extractGetMethod(PsiClass psiClass) {
         List<PsiMethod> methodList = new ArrayList<>();
         while (isValid(psiClass)) {
             addGettMethodToList(psiClass, methodList);
@@ -281,7 +280,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
     @NotNull
-    private List<PsiMethod> extractSetMethods(PsiClass psiClass) {
+    private static List<PsiMethod> extractSetMethods(PsiClass psiClass) {
         List<PsiMethod> methodList = new ArrayList<>();
         while (isValid(psiClass)) {
             addSetMethodToList(psiClass, methodList);
@@ -291,7 +290,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
     @NotNull
-    private String generateStringForNoParam(String generateName, List<PsiMethod> methodList, String splitText, List<String> newImportList, boolean hasGuava) {
+    private static String generateStringForNoParam(String generateName, List<PsiMethod> methodList, String splitText, List<String> newImportList, boolean hasGuava) {
         StringBuilder builder = new StringBuilder();
         builder.append(splitText);
         for (PsiMethod method : methodList) {
@@ -370,7 +369,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
 
-    private void addSetMethodToList(PsiClass psiClass, List<PsiMethod> methodList) {
+    private static void addSetMethodToList(PsiClass psiClass, List<PsiMethod> methodList) {
         PsiMethod[] methods = psiClass.getMethods();
         for (PsiMethod method : methods) {
             if (isValidSetMethod(method)) {
@@ -380,7 +379,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
 
-    private void addGettMethodToList(PsiClass psiClass, List<PsiMethod> methodList) {
+    private static void addGettMethodToList(PsiClass psiClass, List<PsiMethod> methodList) {
         PsiMethod[] methods = psiClass.getMethods();
         for (PsiMethod method : methods) {
             if (isValidGetMethod(method)) {
@@ -389,7 +388,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         }
     }
 
-    private boolean isValidGetMethod(PsiMethod m) {
+    private static boolean isValidGetMethod(PsiMethod m) {
         return m.hasModifierProperty("public") && !m.hasModifierProperty("static") &&
                 (m.getName().startsWith(GET) || m.getName().startsWith(IS));
     }
@@ -442,7 +441,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         return false;
     }
 
-    private boolean isValid(PsiClass psiClass) {
+    private static boolean isValid(PsiClass psiClass) {
         if (psiClass == null) {
             return false;
         }
@@ -453,14 +452,14 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         return true;
     }
 
-    private boolean notObjectClass(PsiClass psiClass) {
+    private static boolean notObjectClass(PsiClass psiClass) {
         if (psiClass.getQualifiedName().equals("java.lang.Object")) {
             return false;
         }
         return true;
     }
 
-    private boolean isValidSetMethod(PsiMethod m) {
+    private static boolean isValidSetMethod(PsiMethod m) {
         return m.hasModifierProperty("public") && !m.hasModifierProperty("static") && m.getName().startsWith("set");
     }
 

@@ -42,18 +42,43 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
             PsiType type = parameter.getType();
             String canonicalText = parameter.getType().getCanonicalText();
 //            todo for array class how to fix it.
-            if (canonicalText.startsWith("java.util.List") ||
-                    canonicalText.startsWith("java.util.Set") ||
-                    canonicalText.startsWith("java.util.Map")) {
-                findedListParameter = parameter;
+            //the list object shall have set method so it can work.
+            WrappInfo wrappInfo = PsiToolUtils.extractWrappInfo(canonicalText);
+            if (wrappInfo == null) {
+                continue;
+            } else {
+                //check the collectType.
+                String qualifyTypeName = wrappInfo.getQualifyTypeName();
+                if (qualifyTypeName.equals("java.util.List")
+                        || qualifyTypeName.equals("java.util.Set")
+                        || qualifyTypeName.equals("java.util.Map")) {
+
+                } else {
+                    continue;
+                }
+
             }
         }
 
         if (findedListParameter != null) {
             ParamInfo paraInfo = PsiToolUtils.extractParamInfo(findedListParameter.getType());
+            String methodName = "convertTo";
+            if (returnParamInfo.getParams().size() > 0) {
+                methodName = methodName + returnParamInfo.getParams().get(0).getRealName();
+            }
+            //todo could use with other style rather than for i ect
+            //todo maybe we can check with null.
+
             insertText.append(splitText + "for(int i=0;i<" + findedListParameter.getName() + ".size();i++){");
-            insertText.append(splitText + "\t" + returnVariableName + ".add(convertTo"+"(" + findedListParameter.getName() + ".get(i)));");
+            insertText.append(splitText + "\t" + returnVariableName + ".add(" + methodName + "(" + findedListParameter.getName() + ".get(i)));");
             insertText.append(splitText + "}");
+
+            //todo must have param size >0 for check or i have to check everywhere
+            if (returnParamInfo.getParams().size() > 0) {
+                String addMethods = splitText + "public static " + returnParamInfo.getParams().get(0).getRealName() +"";
+                insertDto.setAddMethods(addMethods);
+
+            }
         }
 
         insertText.append(splitText + "return " + returnVariableName + ";");
