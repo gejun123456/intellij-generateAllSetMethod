@@ -16,7 +16,12 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
     @Override
     public InsertDto handle(ParamInfo returnParamInfo, String splitText, PsiParameter[] parameters, boolean hasGuava) {
         InsertDto insertDto = new InsertDto();
-        insertDto.setAddedText(splitText + "List<Hehe> hehe = Lists.newArrayList();");
+
+        String newAddText="";
+
+
+
+        insertDto.setAddedText(newAddText);
         return insertDto;
     }
 }
