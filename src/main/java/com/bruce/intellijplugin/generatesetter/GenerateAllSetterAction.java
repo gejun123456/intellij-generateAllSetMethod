@@ -112,7 +112,15 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
         Document document = psiDocumentManager.getDocument(element.getContainingFile());
         String splitText = extractSplitText(method, document);
-        InsertDto dto = getBaseInsertDto(method, splitText, PsiToolUtils.checkGuavaExist(project, element));
+        ParamInfo returnTypeInfo = PsiToolUtils.extractParamInfo(method.getReturnType().getCanonicalText());
+        InsertDto dto = null;
+        if (returnTypeInfo.getCollectPackege() != null && handlerMap.containsKey(returnTypeInfo.getCollectPackege())) {
+            //
+            dto = handlerMap.get(returnTypeInfo.getCollectPackege()).handle(returnTypeInfo, splitText, method.getParameterList().getParameters());
+        } else {
+            PsiClass returnTypeClass = PsiTypesUtil.getPsiClass(method.getReturnType());
+            dto = getBaseInsertDto(splitText, PsiToolUtils.checkGuavaExist(project, element), method.getParameterList().getParameters(), returnTypeClass);
+        }
         if (dto.getAddedText() != null) {
             document.insertString(method.getBody().getTextOffset() + 1, dto.getAddedText());
         }
@@ -124,10 +132,9 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
     @NotNull
-    private InsertDto getBaseInsertDto(PsiMethod method, String splitText, boolean hasGuava) {
+    private InsertDto getBaseInsertDto(String splitText, boolean hasGuava, PsiParameter[] parameters1, PsiClass psiClass) {
         InsertDto dto = new InsertDto();
-        PsiClass psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
-        PsiParameter[] parameters = method.getParameterList().getParameters();
+        PsiParameter[] parameters = parameters1;
         List<PsiMethod> methods = extractSetMethods(psiClass);
         List<String> importList = Lists.newArrayList();
         String generateName = psiClass.getName().substring(0, 1).toLowerCase() + psiClass.getName().substring(1);

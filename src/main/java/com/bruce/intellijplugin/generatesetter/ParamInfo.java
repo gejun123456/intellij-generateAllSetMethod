@@ -1,5 +1,7 @@
 package com.bruce.intellijplugin.generatesetter;
 
+import com.intellij.psi.PsiClass;
+
 import java.util.List;
 
 /**
@@ -13,6 +15,16 @@ public class ParamInfo {
 
     private List<RealParam> params;
 
+    private PsiClass returnType;
+
+
+    public PsiClass getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(PsiClass returnType) {
+        this.returnType = returnType;
+    }
 
     public String getCollectPackege() {
         return collectPackege;
