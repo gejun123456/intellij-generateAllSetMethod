@@ -6,9 +6,14 @@
 [![Downloads](http://phpstorm.espend.de/badge/9360/downloads)][plugin]
 [![Downloads last month](http://phpstorm.espend.de/badge/9360/last-month)][plugin]
 
+- generate setter default values when cursor on local variable
+![setter](https://raw.githubusercontent.com/gejun123456/intellij-generateAllSetMethod/master/screenshot/generate_list_default_value.gif)
 
-![setter](https://raw.githubusercontent.com/gejun123456/intellij-generateAllSetMethod/master/screenshot/me_all_setter.gif)
+- generate converter when cursor in method
+![methodConveter](https://raw.githubusercontent.com/gejun123456/intellij-generateAllSetMethod/master/screenshot/generate_the_conveter.gif)
 
+- generate List Set Map return value
+![ListImplement](https://raw.githubusercontent.com/gejun123456/intellij-generateAllSetMethod/master/screenshot/generate_list_default_value.gif)
 Installation
 ----
 
