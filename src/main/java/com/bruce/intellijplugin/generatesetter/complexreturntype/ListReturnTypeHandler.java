@@ -3,7 +3,6 @@ package com.bruce.intellijplugin.generatesetter.complexreturntype;
 import com.bruce.intellijplugin.generatesetter.ParamInfo;
 import com.bruce.intellijplugin.generatesetter.utils.PsiToolUtils;
 import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -37,18 +36,18 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
             insertText.append("new ArrayList<>();");
         }
         //check if parameter containList ect, to build with it.
-        PsiParameter findedListParameter = null;
+        NewMethodInfo deepInfo = null;
         for (PsiParameter parameter : parameters) {
-            PsiType type = parameter.getType();
-            String canonicalText = parameter.getType().getCanonicalText();
 //            todo for array class how to fix it.
             //the list object shall have set method so it can work.
-            WrappInfo wrappInfo = PsiToolUtils.extractWrappInfo(canonicalText);
-            if (wrappInfo == null) {
+            ParamInfo wrapInfo = PsiToolUtils.extractParamInfo(parameter.getType());
+            if (wrapInfo.getCollectPackege() == null) {
                 continue;
             } else {
                 //check the collectType.
-                String qualifyTypeName = wrappInfo.getQualifyTypeName();
+                String qualifyTypeName = wrapInfo.getCollectPackege();
+                //first check with parameter collect type.
+                //then check if class contains any get method.
                 if (qualifyTypeName.equals("java.util.List")
                         || qualifyTypeName.equals("java.util.Set")
                         || qualifyTypeName.equals("java.util.Map")) {
@@ -60,22 +59,16 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
             }
         }
 
-        if (findedListParameter != null) {
-            ParamInfo paraInfo = PsiToolUtils.extractParamInfo(findedListParameter.getType());
-            String methodName = "convertTo";
-            if (returnParamInfo.getParams().size() > 0) {
-                methodName = methodName + returnParamInfo.getParams().get(0).getRealName();
-            }
+        if (deepInfo != null) {
+
             //todo could use with other style rather than for i ect
             //todo maybe we can check with null.
 
-            insertText.append(splitText + "for(int i=0;i<" + findedListParameter.getName() + ".size();i++){");
-            insertText.append(splitText + "\t" + returnVariableName + ".add(" + methodName + "(" + findedListParameter.getName() + ".get(i)));");
-            insertText.append(splitText + "}");
+            String addText = generateAddTextForCollectParam(deepInfo, returnParamInfo, returnVariableName, splitText);
 
             //todo must have param size >0 for check or i have to check everywhere
             if (returnParamInfo.getParams().size() > 0) {
-                String addMethods = splitText + "public static " + returnParamInfo.getParams().get(0).getRealName() +"";
+                String addMethods = splitText + "public static " + returnParamInfo.getParams().get(0).getRealName() + "";
                 insertDto.setAddMethods(addMethods);
 
             }
@@ -85,5 +78,17 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
 
         insertDto.setAddedText(insertText.toString());
         return insertDto;
+    }
+
+    private String generateAddTextForCollectParam(NewMethodInfo deepInfo, ParamInfo returnParamInfo, String returnVariableName, String splitText) {
+        String methodName = "convertTo";
+        if (returnParamInfo.getParams().size() > 0) {
+            methodName = methodName + returnParamInfo.getParams().get(0).getRealName();
+        }
+        StringBuilder insertText = new StringBuilder();
+        insertText.append(splitText + "for(int i=0;i<" + deepInfo.getParamName() + ".size();i++){");
+        insertText.append(splitText + "\t" + returnVariableName + ".add(" + methodName + "(" + deepInfo.getParamName() + ".get(i)));");
+        insertText.append(splitText + "}");
+        return insertText.toString();
     }
 }

@@ -2,7 +2,6 @@ package com.bruce.intellijplugin.generatesetter.utils;
 
 import com.bruce.intellijplugin.generatesetter.ParamInfo;
 import com.bruce.intellijplugin.generatesetter.RealParam;
-import com.bruce.intellijplugin.generatesetter.complexreturntype.WrappInfo;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
@@ -107,17 +106,17 @@ public class PsiToolUtils {
         return name.substring(0, 1).toLowerCase() + name.substring(1);
     }
 
-    public static WrappInfo extractWrappInfo(String typeFullName) {
-        int u = typeFullName.indexOf("<");
-        if (u == -1) {
-            return null;
-        }
-        WrappInfo info = new WrappInfo();
-        String fullName = typeFullName.substring(0, u);
-        info.setQualifyTypeName(fullName);
-        info.setShortTypeName(extractShortName(fullName));
-        return info;
-    }
+//    public static WrapInfo extractWrappInfo(String typeFullName) {
+//        int u = typeFullName.indexOf("<");
+//        if (u == -1) {
+//            return null;
+//        }
+//        WrapInfo info = new WrapInfo();
+//        String fullName = typeFullName.substring(0, u);
+//        info.setQualifyTypeName(fullName);
+//        info.setShortTypeName(extractShortName(fullName));
+//        return info;
+//    }
 
     private static String extractShortName(String fullName) {
         return fullName.substring(fullName.lastIndexOf(".") + 1);

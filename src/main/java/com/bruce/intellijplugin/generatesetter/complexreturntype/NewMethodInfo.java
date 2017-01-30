@@ -5,9 +5,9 @@ import com.intellij.psi.PsiClass;
 /**
  * @Author bruce.ge
  * @Date 2017/1/29
- * @Description
+ * @Description the info to create statement for list ect.
  */
-public class ParaDeepInfo {
+public class NewMethodInfo {
     private String paramWrapType;
 
     private PsiClass paramInnerType;
@@ -15,6 +15,11 @@ public class ParaDeepInfo {
     private String paramName;
 
     private PsiClass returnClass;
+
+    private String returnVariableName;
+
+
+    private String splitText;
 
     public String getParamWrapType() {
         return paramWrapType;
@@ -46,5 +51,21 @@ public class ParaDeepInfo {
 
     public void setReturnClass(PsiClass returnClass) {
         this.returnClass = returnClass;
+    }
+
+    public String getReturnVariableName() {
+        return returnVariableName;
+    }
+
+    public void setReturnVariableName(String returnVariableName) {
+        this.returnVariableName = returnVariableName;
+    }
+
+    public String getSplitText() {
+        return splitText;
+    }
+
+    public void setSplitText(String splitText) {
+        this.splitText = splitText;
     }
 }

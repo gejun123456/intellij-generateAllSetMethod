@@ -5,7 +5,7 @@ package com.bruce.intellijplugin.generatesetter.complexreturntype;
  * @Date 2017/1/29
  * @Description
  */
-public class WrappInfo {
+public class WrapInfo {
     private String qualifyTypeName;
 
     private String shortTypeName;
