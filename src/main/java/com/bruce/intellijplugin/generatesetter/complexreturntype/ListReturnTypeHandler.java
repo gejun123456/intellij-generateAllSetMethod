@@ -26,7 +26,7 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
                     .append("> " + returnVariableName).append("=");
         } else {
             returnVariableName = "list";
-            insertText.append("List" + returnVariableName + "=");
+            insertText.append("List " + returnVariableName + "=");
         }
 
         if (hasGuava) {
