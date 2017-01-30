@@ -35,7 +35,8 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
             insertText.append("new ArrayList<>();");
         }
         //check if parameter containList ect, to build with it.
-        NewMethodInfo deepInfo = null;
+        NewMethodInfo newMethodInfo = null;
+
         for (PsiParameter parameter : parameters) {
 //            todo for array class how to fix it.
             //the list object shall have set method so it can work.
@@ -52,7 +53,11 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
                 //add not null as default.
                 if (qualifyTypeName.equals("java.util.List")
                         || qualifyTypeName.equals("java.util.Set")) {
-
+                    //there must be one param for it.
+                    if(wrapInfo.getParams().size()>0){
+                        String realName = wrapInfo.getParams().get(0).getRealName();
+                        
+                    }
                 } else {
                     continue;
                 }
@@ -60,12 +65,13 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
             }
         }
 
-        if (deepInfo != null) {
+
+        if (newMethodInfo != null) {
 
             //todo could use with other style rather than for i ect
             //todo maybe we can check with null.
 
-            String addText = generateAddTextForCollectParam(deepInfo, returnParamInfo, returnVariableName, splitText);
+            String addText = generateAddTextForCollectParam(newMethodInfo, returnParamInfo, returnVariableName, splitText);
 
             //todo must have param size >0 for check or i have to check everywhere
             //todo do we really need to generate with the method.
