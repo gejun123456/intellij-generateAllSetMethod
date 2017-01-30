@@ -1,6 +1,6 @@
 package com.bruce.intellijplugin.generatesetter.complexreturntype;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @Author bruce.ge
@@ -12,7 +12,7 @@ public class InsertDto {
 
     private String addMethods;
 
-    private List<String> importList;
+    private Set<String> importList;
 
 
     public String getAddedText() {
@@ -31,11 +31,12 @@ public class InsertDto {
         this.addMethods = addMethods;
     }
 
-    public List<String> getImportList() {
+
+    public Set<String> getImportList() {
         return importList;
     }
 
-    public void setImportList(List<String> importList) {
+    public void setImportList(Set<String> importList) {
         this.importList = importList;
     }
 }

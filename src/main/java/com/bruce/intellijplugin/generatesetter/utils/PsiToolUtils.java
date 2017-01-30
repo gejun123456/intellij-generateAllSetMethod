@@ -64,7 +64,7 @@ public class PsiToolUtils {
         return info;
     }
 
-    public static void addImportToFile(PsiDocumentManager psiDocumentManager, PsiJavaFile containingFile, Document document, List<String> newImportList) {
+    public static void addImportToFile(PsiDocumentManager psiDocumentManager, PsiJavaFile containingFile, Document document, Set<String> newImportList) {
         if (newImportList.size() > 0) {
             Iterator<String> iterator = newImportList.iterator();
             while (iterator.hasNext()) {

@@ -2,6 +2,7 @@ package com.bruce.intellijplugin.generatesetter.complexreturntype;
 
 import com.bruce.intellijplugin.generatesetter.ParamInfo;
 import com.bruce.intellijplugin.generatesetter.utils.PsiToolUtils;
+import com.google.common.collect.Sets;
 import com.intellij.psi.PsiParameter;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +32,7 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
 
         if (hasGuava) {
             insertText.append("Lists.newArrayList();");
+            insertDto.setImportList(Sets.newHashSet("com.google.common.collect.Lists"));
         } else {
             insertText.append("new ArrayList<>();");
         }

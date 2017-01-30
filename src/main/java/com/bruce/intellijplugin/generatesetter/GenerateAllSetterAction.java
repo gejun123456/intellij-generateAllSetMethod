@@ -4,8 +4,8 @@ import com.bruce.intellijplugin.generatesetter.complexreturntype.*;
 import com.bruce.intellijplugin.generatesetter.utils.PsiClassUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiDocumentUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiToolUtils;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -19,10 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by bruce.ge on 2016/12/23.
@@ -141,7 +138,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         InsertDto dto = new InsertDto();
         PsiParameter[] parameters = parameters1;
         List<PsiMethod> methods = PsiClassUtils.extractSetMethods(psiClass);
-        List<String> importList = Lists.newArrayList();
+        Set<String> importList = Sets.newHashSet();
         String generateName = PsiToolUtils.lowerStart(psiClass.getName());
         GetInfo info = null;
         if (parameters.length > 0) {
@@ -172,7 +169,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         return dto;
     }
 
-    private static String generateStringForParam(String generateName, List<PsiMethod> methodList, String splitText, List<String> newImportList, boolean hasGuava, GetInfo info) {
+    private static String generateStringForParam(String generateName, List<PsiMethod> methodList, String splitText, Set<String> newImportList, boolean hasGuava, GetInfo info) {
         StringBuilder builder = new StringBuilder();
         builder.append(splitText);
         for (PsiMethod method : methodList) {
@@ -261,7 +258,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         splitText = "\n" + splitText;
 
 
-        List<String> newImportList = new ArrayList<>();
+        Set<String> newImportList = new HashSet<>();
         boolean hasGuava = PsiToolUtils.checkGuavaExist(project, element);
 
         String buildString = generateStringForNoParam(generateName, methodList, splitText, newImportList, hasGuava);
@@ -272,7 +269,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
     @NotNull
-    private static String generateStringForNoParam(String generateName, List<PsiMethod> methodList, String splitText, List<String> newImportList, boolean hasGuava) {
+    private static String generateStringForNoParam(String generateName, List<PsiMethod> methodList, String splitText, Set<String> newImportList, boolean hasGuava) {
         StringBuilder builder = new StringBuilder();
         builder.append(splitText);
         for (PsiMethod method : methodList) {
@@ -283,7 +280,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         return builder.toString();
     }
 
-    private static void generateDefaultForOneMethod(String generateName, List<String> newImportList, boolean hasGuava, StringBuilder builder, PsiMethod method) {
+    private static void generateDefaultForOneMethod(String generateName, Set<String> newImportList, boolean hasGuava, StringBuilder builder, PsiMethod method) {
         PsiParameter[] parameters = method.getParameterList().getParameters();
         builder.append(generateName + "." + method.getName() + "(");
         int u = parameters.length;
@@ -338,7 +335,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         builder.append(");");
     }
 
-    private static void appendCollectNotEmpty(StringBuilder builder, ParamInfo paramInfo, String defaultImpl, List<String> newImportList) {
+    private static void appendCollectNotEmpty(StringBuilder builder, ParamInfo paramInfo, String defaultImpl, Set<String> newImportList) {
         builder.append("new " + defaultImpl + "<");
         for (int i = 0; i < paramInfo.getParams().size(); i++) {
             builder.append(paramInfo.getParams().get(i).getRealName());
