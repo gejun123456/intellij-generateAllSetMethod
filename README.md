@@ -7,7 +7,7 @@
 [![Downloads last month](http://phpstorm.espend.de/badge/9360/last-month)][plugin]
 
 - generate setter default values when cursor on local variable
-![setter](https://raw.githubusercontent.com/gejun123456/intellij-generateAllSetMethod/master/screenshot/generate_list_default_value.gif)
+![setter](https://raw.githubusercontent.com/gejun123456/intellij-generateAllSetMethod/master/screenshot/generate_setter_default_value.gif)
 
 - generate converter when cursor in method
 ![methodConveter](https://raw.githubusercontent.com/gejun123456/intellij-generateAllSetMethod/master/screenshot/generate_the_conveter.gif)
