@@ -6,7 +6,7 @@
 
     <description><![CDATA[
       <p> generate a class all setter method default value by alt+enter on the variable class</p>
-      <p> generate a set method for two object conveter when they have same field</p>
+      <p> generate a set method for two object converter when they have same field</p>
       <p> generate default value when returnType is List Set Map </p>
       <p> like a user class has setName, setPassword methods</p>
       <p> <b>User</b> user = new User();</p>
