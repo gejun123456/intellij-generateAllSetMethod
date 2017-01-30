@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
 
-
     @NotNull
     @Override
     public InsertDto handle(ParamInfo returnParamInfo, String splitText, PsiParameter[] parameters, boolean hasGuava) {
@@ -48,9 +47,11 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
                 String qualifyTypeName = wrapInfo.getCollectPackege();
                 //first check with parameter collect type.
                 //then check if class contains any get method.
+                //shall not support with map?
+                //todo if need to support with map type as arrayList HashSet ect.
+                //add not null as default.
                 if (qualifyTypeName.equals("java.util.List")
-                        || qualifyTypeName.equals("java.util.Set")
-                        || qualifyTypeName.equals("java.util.Map")) {
+                        || qualifyTypeName.equals("java.util.Set")) {
 
                 } else {
                     continue;
@@ -67,10 +68,10 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
             String addText = generateAddTextForCollectParam(deepInfo, returnParamInfo, returnVariableName, splitText);
 
             //todo must have param size >0 for check or i have to check everywhere
+            //todo do we really need to generate with the method.
             if (returnParamInfo.getParams().size() > 0) {
-                String addMethods = splitText + "public static " + returnParamInfo.getParams().get(0).getRealName() + "";
+                String addMethods = splitText + "public static " + returnParamInfo.getParams().get(0).getRealName();
                 insertDto.setAddMethods(addMethods);
-
             }
         }
 
@@ -80,7 +81,7 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
         return insertDto;
     }
 
-    private String generateAddTextForCollectParam(NewMethodInfo deepInfo, ParamInfo returnParamInfo, String returnVariableName, String splitText) {
+    private static String generateAddTextForCollectParam(NewMethodInfo deepInfo, ParamInfo returnParamInfo, String returnVariableName, String splitText) {
         String methodName = "convertTo";
         if (returnParamInfo.getParams().size() > 0) {
             methodName = methodName + returnParamInfo.getParams().get(0).getRealName();

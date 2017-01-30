@@ -1,6 +1,7 @@
 package com.bruce.intellijplugin.generatesetter;
 
 import com.bruce.intellijplugin.generatesetter.complexreturntype.*;
+import com.bruce.intellijplugin.generatesetter.utils.PsiClassUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiDocumentUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiToolUtils;
 import com.google.common.collect.Lists;
@@ -139,7 +140,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     private static InsertDto getBaseInsertDto(String splitText, boolean hasGuava, PsiParameter[] parameters1, PsiClass psiClass) {
         InsertDto dto = new InsertDto();
         PsiParameter[] parameters = parameters1;
-        List<PsiMethod> methods = extractSetMethods(psiClass);
+        List<PsiMethod> methods = PsiClassUtils.extractSetMethods(psiClass);
         List<String> importList = Lists.newArrayList();
         String generateName = PsiToolUtils.lowerStart(psiClass.getName());
         GetInfo info = null;
@@ -150,7 +151,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                 if (parameterClass == null || parameterClass.getQualifiedName().startsWith("java.")) {
                     continue;
                 } else {
-                    List<PsiMethod> getMethods = extractGetMethod(parameterClass);
+                    List<PsiMethod> getMethods = PsiClassUtils.extractGetMethod(parameterClass);
                     // TODO: 2017/1/20 may be i can extract get memthod from all parameter
                     if (getMethods.size() > 0) {
                         info = buildInfo(parameter, getMethods);
@@ -230,15 +231,6 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         return splitText;
     }
 
-    private static List<PsiMethod> extractGetMethod(PsiClass psiClass) {
-        List<PsiMethod> methodList = new ArrayList<>();
-        while (isValid(psiClass)) {
-            addGettMethodToList(psiClass, methodList);
-            psiClass = psiClass.getSuperClass();
-        }
-        return methodList;
-    }
-
 
     private void handleWithLocalVariable(PsiLocalVariable localVariable, Project project, PsiElement element) {
         PsiElement parent1 = localVariable.getParent();
@@ -247,7 +239,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         }
         PsiClass psiClass = PsiTypesUtil.getPsiClass(localVariable.getType());
         String generateName = localVariable.getName();
-        List<PsiMethod> methodList = extractSetMethods(psiClass);
+        List<PsiMethod> methodList = PsiClassUtils.extractSetMethods(psiClass);
         if (methodList.size() == 0) {
             return;
         }
@@ -277,16 +269,6 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
         PsiToolUtils.addImportToFile(psiDocumentManager, (PsiJavaFile) containingFile, document, newImportList);
         return;
-    }
-
-    @NotNull
-    private static List<PsiMethod> extractSetMethods(PsiClass psiClass) {
-        List<PsiMethod> methodList = new ArrayList<>();
-        while (isValid(psiClass)) {
-            addSetMethodToList(psiClass, methodList);
-            psiClass = psiClass.getSuperClass();
-        }
-        return methodList;
     }
 
     @NotNull
@@ -369,30 +351,6 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     }
 
 
-    private static void addSetMethodToList(PsiClass psiClass, List<PsiMethod> methodList) {
-        PsiMethod[] methods = psiClass.getMethods();
-        for (PsiMethod method : methods) {
-            if (isValidSetMethod(method)) {
-                methodList.add(method);
-            }
-        }
-    }
-
-
-    private static void addGettMethodToList(PsiClass psiClass, List<PsiMethod> methodList) {
-        PsiMethod[] methods = psiClass.getMethods();
-        for (PsiMethod method : methods) {
-            if (isValidGetMethod(method)) {
-                methodList.add(method);
-            }
-        }
-    }
-
-    private static boolean isValidGetMethod(PsiMethod m) {
-        return m.hasModifierProperty("public") && !m.hasModifierProperty("static") &&
-                (m.getName().startsWith(GET) || m.getName().startsWith(IS));
-    }
-
     private String findNextNotNull(PsiTypeElement psiType, String defaultName) {
         PsiElement nextSibling = psiType.getNextSibling();
         while (nextSibling != null && StringUtils.isBlank(nextSibling.getText())) {
@@ -430,26 +388,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         }
         //todo when psiClass is null, it can be list ect. can generate it as well could use method.getReturnType.getCanolicText to check for type ect.
         //todo may check with the cursor if it on the method definition area instead of everywhere in method.
-        while (isValid(psiClass)) {
-            for (PsiMethod m : psiClass.getMethods()) {
-                if (isValidSetMethod(m)) {
-                    return true;
-                }
-            }
-            psiClass = psiClass.getSuperClass();
-        }
-        return false;
-    }
-
-    private static boolean isValid(PsiClass psiClass) {
-        if (psiClass == null) {
-            return false;
-        }
-        String qualifiedName = psiClass.getQualifiedName();
-        if (qualifiedName == null || qualifiedName.startsWith("java.")) {
-            return false;
-        }
-        return true;
+        return PsiClassUtils.checkClassHasValidSetMethod(psiClass);
     }
 
     private static boolean notObjectClass(PsiClass psiClass) {
@@ -457,10 +396,6 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
             return false;
         }
         return true;
-    }
-
-    private static boolean isValidSetMethod(PsiMethod m) {
-        return m.hasModifierProperty("public") && !m.hasModifierProperty("static") && m.getName().startsWith("set");
     }
 
     @Nls

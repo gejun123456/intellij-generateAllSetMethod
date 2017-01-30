@@ -5,6 +5,7 @@ package com.bruce.intellijplugin.generatesetter.complexreturntype;
  * @Date 2017/1/29
  * @Description
  */
+@Deprecated
 public class WrapInfo {
     private String qualifyTypeName;
 
