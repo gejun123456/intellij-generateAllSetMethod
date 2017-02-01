@@ -104,6 +104,9 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
         } else if (psiParent instanceof PsiMethod) {
             PsiMethod method = (PsiMethod) psiParent;
+            if (method.getReturnType() == null) {
+                return;
+            }
 
             handleWithMethod(method, project, element);
         }
@@ -377,6 +380,10 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
         } else if (psiParent instanceof PsiMethod) {
             PsiMethod method = (PsiMethod) psiParent;
+//            if is constructor the return type will be null.
+            if (method.getReturnType() == null) {
+                return false;
+            }
             psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
             ParamInfo returnTypeInfo = PsiToolUtils.extractParamInfo(method.getReturnType());
             if (returnTypeInfo.getCollectPackege() != null && handlerMap.containsKey(returnTypeInfo.getCollectPackege())) {
