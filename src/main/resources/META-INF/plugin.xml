@@ -1,10 +1,13 @@
 <idea-plugin version="2">
     <id>com.bruce.intellijplugin.generatesetter</id>
     <name>GenerateAllSetter</name>
-  <version>1.6</version>
+  <version>1.7</version>
     <vendor email="gejun123456@gmail.com" url="https://github.com/gejun123456/intellij-generateAllSetMethod">bruceGe</vendor>
 
     <description><![CDATA[
+    <p><a href="https://github.com/gejun123456/intellij-generateAllSetMethod">GitHub</a>
+      |&nbsp<a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a></p>
+
       <p> generate a class all setter method default value by alt+enter on the variable class</p>
       <p> generate a set method for two object converter when they have same field</p>
       <p> generate default value when returnType is List Set Map </p>
@@ -19,6 +22,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <li>1.7 support two list convert</li>
     <p>1.6 fix exception when the cursor on constructor method</p>
     <p>1.5 generate default value for returnType is List Set Map</p>
     <p>1.4 could use on method, and if method parameter contain same value, then will pass to it</p>

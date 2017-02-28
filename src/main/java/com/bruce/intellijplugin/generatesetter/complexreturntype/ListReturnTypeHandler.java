@@ -35,10 +35,11 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
             insertDto.setImportList(Sets.newHashSet("com.google.common.collect.Lists"));
         } else {
             insertText.append("new ArrayList<>();");
+            insertDto.setImportList(Sets.newHashSet("java.util.ArrayList"));
         }
         //check if parameter containList ect, to build with it.
-        NewMethodInfo newMethodInfo = null;
 
+        ListParamInfo paramInfo = null;
         for (PsiParameter parameter : parameters) {
 //            todo for array class how to fix it.
             //the list object shall have set method so it can work.
@@ -48,41 +49,26 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
             } else {
                 //check the collectType.
                 String qualifyTypeName = wrapInfo.getCollectPackege();
-                //first check with parameter collect type.
-                //then check if class contains any get method.
-                //shall not support with map?
-                //todo if need to support with map type as arrayList HashSet ect.
-                //add not null as default.
                 if (qualifyTypeName.equals("java.util.List")
                         || qualifyTypeName.equals("java.util.Set")) {
                     //there must be one param for it.
-                    if(wrapInfo.getParams().size()>0){
-                        String realName = wrapInfo.getParams().get(0).getRealName();
-                        
-                    }
+                    paramInfo = new ListParamInfo();
+                    paramInfo.setCollectType(qualifyTypeName);
+                    paramInfo.setParamName(parameter.getName());
+                    paramInfo.setRealType(wrapInfo.getParams().get(0).getRealName());
                 } else {
                     continue;
                 }
-
             }
         }
-
-
-        if (newMethodInfo != null) {
-
-            //todo could use with other style rather than for i ect
-            //todo maybe we can check with null.
-
-            String addText = generateAddTextForCollectParam(newMethodInfo, returnParamInfo, returnVariableName, splitText);
-
-            //todo must have param size >0 for check or i have to check everywhere
-            //todo do we really need to generate with the method.
-            if (returnParamInfo.getParams().size() > 0) {
-                String addMethods = splitText + "public static " + returnParamInfo.getParams().get(0).getRealName();
-                insertDto.setAddMethods(addMethods);
-            }
+        if (paramInfo != null) {
+            String realType = paramInfo.getRealType();
+            String varName = PsiToolUtils.lowerStart(paramInfo.getRealType());
+            System.out.println(splitText);
+            insertText.append(splitText + "for (" + realType + " " + varName + " :" + paramInfo.getParamName() + ") {");
+            insertText.append(splitText + "\t" + returnVariableName + ".add(convertFrom" + realType + "(" + varName + "));");
+            insertText.append(splitText + "}");
         }
-
         insertText.append(splitText + "return " + returnVariableName + ";");
 
         insertDto.setAddedText(insertText.toString());
