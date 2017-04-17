@@ -45,4 +45,4 @@ dependencies {
 }
 
 group 'com.bruce.intellijplugin'
-version '1.7'
+version '1.8'
