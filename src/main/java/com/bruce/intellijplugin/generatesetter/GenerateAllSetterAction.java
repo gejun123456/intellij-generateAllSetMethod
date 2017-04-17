@@ -34,6 +34,8 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         put("boolean", "false");
         put("java.lang.Boolean", "false");
         put("int", "0");
+        put("byte","(byte)0");
+        put("java.lang.Byte","(byte)0");
         put("java.lang.Integer", "0");
         put("java.lang.String", "\"\"");
         put("java.math.BigDecimal", "new BigDecimal(\"0\")");
