@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.bruce.intellijplugin.generatesetter</id>
     <name>GenerateAllSetter</name>
-  <version>1.8</version>
+  <version>1.9</version>
     <vendor email="gejun123456@gmail.com" url="https://github.com/gejun123456/intellij-generateAllSetMethod">bruceGe</vendor>
 
     <description><![CDATA[
@@ -22,6 +22,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <li>1.9 fix maps import and add default value for some package</li>
     <li>1.8 support byte type</li>
     <li>1.7 support two list convert</li>
     <p>1.6 fix exception when the cursor on constructor method</p>
