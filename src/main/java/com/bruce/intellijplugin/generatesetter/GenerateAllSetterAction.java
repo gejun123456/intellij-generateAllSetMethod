@@ -34,8 +34,8 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         put("boolean", "false");
         put("java.lang.Boolean", "false");
         put("int", "0");
-        put("byte","(byte)0");
-        put("java.lang.Byte","(byte)0");
+        put("byte", "(byte)0");
+        put("java.lang.Byte", "(byte)0");
         put("java.lang.Integer", "0");
         put("java.lang.String", "\"\"");
         put("java.math.BigDecimal", "new BigDecimal(\"0\")");
@@ -91,6 +91,12 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         put("Set", "java.util.HashSet");
     }};
 
+
+    private static Map<String, String> defaultPacakgeValues = new HashMap<String, String>() {{
+        put("java.sql.Date", "new Date(new java.util.Date().getTime())");
+        put("java.sql.Timestamp", "new Timestamp(new java.util.Date().getTime())");
+    }};
+
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
         PsiElement psiParent = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class, PsiMethod.class);
@@ -102,7 +108,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
             if (!(psiLocal.getParent() instanceof PsiDeclarationStatement)) {
                 return;
             }
-            handleWithLocalVariable(psiLocal, project, element);
+            handleWithLocalVariable(psiLocal, project, psiLocal);
 
         } else if (psiParent instanceof PsiMethod) {
             PsiMethod method = (PsiMethod) psiParent;
@@ -110,7 +116,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                 return;
             }
 
-            handleWithMethod(method, project, element);
+            handleWithMethod(method, project, method);
         }
     }
 
@@ -162,6 +168,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                 }
             }
         }
+        // TODO: 2017/8/2 what if two class has the same name
         String insertText = splitText + psiClass.getName() + " " + generateName + "= new " + psiClass.getName() + "();";
         if (info == null) {
             insertText += generateStringForNoParam(generateName, methods, splitText, importList, hasGuava);
@@ -180,9 +187,19 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         for (PsiMethod method : methodList) {
             if (method.getName().startsWith("set")) {
                 String fieldToLower = method.getName().substring(3).toLowerCase();
-                String s = info.getNameToMethodMap().get(fieldToLower);
+                PsiMethod s = info.getNameToMethodMap().get(fieldToLower);
                 if (s != null) {
-                    builder.append(generateName + "." + method.getName() + "(" + info.getParamName() + "." + s + "());");
+                    // TODO: 2017/8/2 check the get method return type and set method param type.
+                    if (method.getParameterList().getParameters().length == 1) {
+                        PsiParameter psiParameter = method.getParameterList().getParameters()[0];
+                        PsiType type = psiParameter.getType();
+                        PsiType returnType = s.getReturnType();
+                        String setTypeText = type.getCanonicalText();
+                        String getTypeText = returnType.getCanonicalText();
+                        String getMethodText = info.getParamName() + "." + s.getName() + "()";
+                        String startText = generateName + "." + method.getName() + "(";
+                        builder.append(generateSetterString(setTypeText, getTypeText, getMethodText, startText));
+                    }
                 } else {
                     generateDefaultForOneMethod(generateName, newImportList, hasGuava, builder, method);
                 }
@@ -192,18 +209,41 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         return builder.toString();
     }
 
+    private static String generateSetterString(String setTypeText, String getTypeText, String getMethodText, String startText) {
+        if (setTypeText.equals(getTypeText)) {
+            return startText + getMethodText + ");";
+        } else {
+            if (setTypeText.equals("java.lang.String")) {
+                return startText + "String.valueOf(" + getMethodText + "));";
+            } else if (setTypeText.equals("java.util.Date") && checkMethodIsLong(getTypeText)) {
+                return startText + "new Date(" + getMethodText + "));";
+            } else if (checkMethodIsLong(setTypeText) && getTypeText.equals("java.util.Date")) {
+                return startText + getMethodText + ".getTime());";
+            } else if (setTypeText.equals("java.sql.Timestamp") && checkMethodIsLong(getTypeText)) {
+                return startText + "new Timestamp(" + getMethodText + "));";
+            } else if (checkMethodIsLong(setTypeText) && getTypeText.equals("java.sql.Timestamp")) {
+                return startText + getMethodText + ".getTime());";
+            }
+        }
+        return startText + getMethodText + ");";
+    }
+
+    private static boolean checkMethodIsLong(String getMethodText) {
+        return getMethodText.equals("java.lang.Long") || getMethodText.equals("long");
+    }
+
     @NotNull
     private static GetInfo buildInfo(PsiParameter parameter, List<PsiMethod> getMethods) {
         GetInfo info;
         info = new GetInfo();
         info.setParamName(parameter.getName());
         info.setGetMethods(getMethods);
-        Map<String, String> nameToMethodMaps = Maps.newHashMap();
+        Map<String, PsiMethod> nameToMethodMaps = Maps.newHashMap();
         for (PsiMethod getMethod : getMethods) {
             if (getMethod.getName().startsWith(IS)) {
-                nameToMethodMaps.put(getMethod.getName().substring(2).toLowerCase(), getMethod.getName());
+                nameToMethodMaps.put(getMethod.getName().substring(2).toLowerCase(), getMethod);
             } else if (getMethod.getName().startsWith(GET)) {
-                nameToMethodMaps.put(getMethod.getName().substring(3).toLowerCase(), getMethod.getName());
+                nameToMethodMaps.put(getMethod.getName().substring(3).toLowerCase(), getMethod);
             }
         }
         info.setNameToMethodMap(nameToMethodMaps);
@@ -325,9 +365,16 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                             newImportList.add(paramInfo.getCollectPackege());
                         }
                     } else {
-                        //may be could get the construct of the class.
-                        builder.append("new " + paramInfo.getParams().get(0).getRealName() + "()");
-                        newImportList.add(paramInfo.getParams().get(0).getRealPackage());
+                        //may be could get the construct of the class. get the constructor of the class.
+                        String realPackage = paramInfo.getParams().get(0).getRealPackage();
+                        //todo could add more to the default package values.
+                        String s = defaultPacakgeValues.get(realPackage);
+                        if (s != null) {
+                            builder.append(s);
+                        } else {
+                            builder.append("new " + paramInfo.getParams().get(0).getRealName() + "()");
+                        }
+                        newImportList.add(realPackage);
                     }
                 }
 

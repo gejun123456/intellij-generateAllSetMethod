@@ -16,14 +16,14 @@ public class GetInfo {
     private List<PsiMethod> getMethods;
 
 
-    private Map<String,String> nameToMethodMap;
+    private Map<String,PsiMethod> nameToMethodMap;
 
 
-    public Map<String, String> getNameToMethodMap() {
+    public Map<String, PsiMethod> getNameToMethodMap() {
         return nameToMethodMap;
     }
 
-    public void setNameToMethodMap(Map<String, String> nameToMethodMap) {
+    public void setNameToMethodMap(Map<String, PsiMethod> nameToMethodMap) {
         this.nameToMethodMap = nameToMethodMap;
     }
 
