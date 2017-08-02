@@ -3,6 +3,7 @@ package com.bruce.intellijplugin.generatesetter.utils;
 import com.bruce.intellijplugin.generatesetter.ParamInfo;
 import com.bruce.intellijplugin.generatesetter.RealParam;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -21,8 +22,12 @@ import java.util.*;
  */
 public class PsiToolUtils {
 
-    public static boolean checkGuavaExist(Project project, PsiElement element) {
-        PsiClass[] listss = PsiShortNamesCache.getInstance(project).getClassesByName("Lists", GlobalSearchScope.moduleRuntimeScope(ModuleUtilCore.findModuleForPsiElement(element), false));
+    public static boolean checkGuavaExist(Project project, @NotNull PsiElement element) {
+        Module moduleForPsiElement = ModuleUtilCore.findModuleForPsiElement(element);
+        if(moduleForPsiElement==null){
+            return false;
+        }
+        PsiClass[] listss = PsiShortNamesCache.getInstance(project).getClassesByName("Lists", GlobalSearchScope.moduleRuntimeScope(moduleForPsiElement, false));
         for (PsiClass psiClass : listss) {
             if (psiClass.getQualifiedName().equals("com.google.common.collect.Lists")) ;
             return true;
