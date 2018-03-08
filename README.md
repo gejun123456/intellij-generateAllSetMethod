@@ -24,7 +24,7 @@ support following product build version > 141
 - IntelliJ IDEA Community Edition
 
 **using IDE plugin system**
-- <kbd>Preferences(Settings)</kbd> > <kbd>Plugins</kbd> > <kbd>Browse repositories...</kbd> > <kbd>find"generateAllSetMethod"</kbd> > <kbd>Install Plugin</kbd>
+- <kbd>Preferences(Settings)</kbd> > <kbd>Plugins</kbd> > <kbd>Browse repositories...</kbd> > <kbd>find"GenerateAllSetter"</kbd> > <kbd>Install Plugin</kbd>
 
 **Manual:**
 - download[`lastest plugin zip`][latest-release] -> <kbd>Preferences(Settings)</kbd> > <kbd>Plugins</kbd> > <kbd>Install plugin from disk...</kbd>
