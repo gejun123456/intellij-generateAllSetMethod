@@ -41,7 +41,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         put("java.math.BigDecimal", "new BigDecimal(\"0\")");
         put("java.lang.Long", "0L");
         put("long", "0L");
-        put("short", "0");
+        put("short", "(short)0");
         put("java.lang.Short", "0");
         put("java.util.Date", "new Date()");
         put("float", "0.0F");
@@ -50,6 +50,9 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         put("java.lang.Double", "0.0D");
         put("java.lang.Character", "\'\'");
         put("char", "\'\'");
+        put("java.time.LocalDateTime","LocalDateTime.now()");
+        put("java.time.LocalDate","LocalDate.now()");
+
     }};
 
     private static Map<String, ComplexReturnTypeHandler> handlerMap = new HashMap<String, ComplexReturnTypeHandler>() {{
