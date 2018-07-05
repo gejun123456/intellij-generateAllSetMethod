@@ -25,6 +25,7 @@ apply plugin: 'org.jetbrains.intellij'
 
 
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 
 intellij {
