@@ -1,6 +1,6 @@
 package com.bruce.intellijplugin.generatesetter.utils;
 
-import com.bruce.intellijplugin.generatesetter.ParamInfo;
+import com.bruce.intellijplugin.generatesetter.Parameters;
 import com.bruce.intellijplugin.generatesetter.RealParam;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.Module;
@@ -37,9 +37,9 @@ public class PsiToolUtils {
     }
 
     @NotNull
-    public static ParamInfo extractParamInfo(PsiType psiType) {
+    public static Parameters extractParamInfo(PsiType psiType) {
         String typeFullName = psiType.getCanonicalText();
-        ParamInfo info = new ParamInfo();
+        Parameters info = new Parameters();
         info.setReturnType(PsiTypesUtil.getPsiClass(psiType));
         int u = typeFullName.indexOf("<");
         if (u == -1) {

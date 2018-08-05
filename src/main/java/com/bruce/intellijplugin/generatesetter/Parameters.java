@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by bruce.ge on 2016/12/24.
  */
-public class ParamInfo {
+public class Parameters {
 
     private String collectPackege;
 

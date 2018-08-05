@@ -1,6 +1,6 @@
 package com.bruce.intellijplugin.generatesetter.utils;
 
-import com.bruce.intellijplugin.generatesetter.GenerateAllSetterAction;
+import com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import org.jetbrains.annotations.NotNull;
@@ -72,9 +72,28 @@ public class PsiClassUtils {
     }
 
     public static boolean checkClassHasValidSetMethod(PsiClass psiClass) {
+        if (psiClass == null) {
+            return false;
+        }
         while (isSystemClass(psiClass)) {
             for (PsiMethod m : psiClass.getMethods()) {
                 if (isValidSetMethod(m)) {
+                    return true;
+                }
+            }
+            psiClass = psiClass.getSuperClass();
+        }
+        return false;
+    }
+
+
+    public static boolean checkClasHasValidGetMethod(PsiClass psiClass) {
+        if (psiClass == null) {
+            return false;
+        }
+        while (isSystemClass(psiClass)) {
+            for (PsiMethod m : psiClass.getMethods()) {
+                if (isValidGetMethod(m)) {
                     return true;
                 }
             }

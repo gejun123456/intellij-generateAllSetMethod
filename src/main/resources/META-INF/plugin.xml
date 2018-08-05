@@ -1,14 +1,13 @@
 <idea-plugin version="2">
     <id>com.bruce.intellijplugin.generatesetter</id>
     <name>GenerateAllSetter</name>
-  <version>2.0</version>
     <vendor email="gejun123456@gmail.com" url="https://github.com/gejun123456/intellij-generateAllSetMethod">bruceGe</vendor>
 
     <description><![CDATA[
     <p><a href="https://github.com/gejun123456/intellij-generateAllSetMethod">GitHub</a>
       |&nbsp<a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a></p>
 
-      <p> generate a class all setter method default value by alt+enter on the variable class</p>
+      <p> generate call to class all setter method by alt+enter on the variable class</p>
       <p> generate a set method for two object converter when they have same field</p>
       <p> generate default value when returnType is List Set Map </p>
       <p> like a user class has setName, setPassword methods</p>
@@ -41,7 +40,7 @@
         <intentionAction>
             <className>com.ccnode.codegenerator.view.GenerateMethodXmlAction</className>
 
-            <className>com.bruce.intellijplugin.generatesetter.GenerateAllSetterAction</className>
+            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction</className>
 
         </intentionAction>
     </extensions>

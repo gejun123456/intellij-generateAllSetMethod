@@ -1,6 +1,6 @@
 package com.bruce.intellijplugin.generatesetter.complexreturntype;
 
-import com.bruce.intellijplugin.generatesetter.ParamInfo;
+import com.bruce.intellijplugin.generatesetter.Parameters;
 import com.bruce.intellijplugin.generatesetter.utils.PsiToolUtils;
 import com.google.common.collect.Sets;
 import com.intellij.psi.PsiParameter;
@@ -15,7 +15,7 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
 
     @NotNull
     @Override
-    public InsertDto handle(ParamInfo returnParamInfo, String splitText, PsiParameter[] parameters, boolean hasGuava) {
+    public InsertDto handle(Parameters returnParamInfo, String splitText, PsiParameter[] parameters, boolean hasGuava) {
         InsertDto insertDto = new InsertDto();
         String returnVariableName = "";
         StringBuilder insertText = new StringBuilder();
@@ -43,7 +43,7 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
         for (PsiParameter parameter : parameters) {
 //            todo for array class how to fix it.
             //the list object shall have set method so it can work.
-            ParamInfo wrapInfo = PsiToolUtils.extractParamInfo(parameter.getType());
+            Parameters wrapInfo = PsiToolUtils.extractParamInfo(parameter.getType());
             if (wrapInfo.getCollectPackege() == null) {
                 continue;
             } else {
@@ -75,7 +75,7 @@ public class ListReturnTypeHandler implements ComplexReturnTypeHandler {
         return insertDto;
     }
 
-    private static String generateAddTextForCollectParam(NewMethodInfo deepInfo, ParamInfo returnParamInfo, String returnVariableName, String splitText) {
+    private static String generateAddTextForCollectParam(NewMethodInfo deepInfo, Parameters returnParamInfo, String returnVariableName, String splitText) {
         String methodName = "convertTo";
         if (returnParamInfo.getParams().size() > 0) {
             methodName = methodName + returnParamInfo.getParams().get(0).getRealName();
