@@ -8,7 +8,7 @@
       |&nbsp<a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a></p>
 
       <p> generate call to class all setter method by alt+enter on the variable class</p>
-      <p> generate a set method for two object converter when they have same field</p>
+      <p> generate a converter two object when they have same field</p>
       <p> generate default value when returnType is List Set Map </p>
       <p> like a user class has setName, setPassword methods</p>
       <p> <b>User</b> user = new User();</p>

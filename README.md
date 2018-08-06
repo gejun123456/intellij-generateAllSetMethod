@@ -31,6 +31,15 @@ support following product build version > 141
 
 restart **IDE**.
 
+## contribute 
+- import the project to Intellij
+- add a gradle task runIde
+- change the code and run the task to see the change
+
+## my other plugins
+- MybatisCodeHelperPro  https://github.com/gejun123456/MyBatisCodeHelper-Pro
+
+- StackOverFlow https://github.com/gejun123456/IntellijGoToStackOverFlow
 
 [release-img]: https://img.shields.io/github/release/gejun123456/intellij-generateAllSetMethod.svg
 [latest-release]: https://github.com/gejun123456/intellij-generateAllSetMethod/releases/latest

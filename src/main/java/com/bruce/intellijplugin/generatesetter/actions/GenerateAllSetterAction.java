@@ -26,7 +26,7 @@ import java.util.*;
 /**
  * Created by bruce.ge on 2016/12/23.
  */
-public abstract class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
+public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
     public static final String GENERATE_SETTER_METHOD = "generate all setter";
     public static final String IS = "is";
