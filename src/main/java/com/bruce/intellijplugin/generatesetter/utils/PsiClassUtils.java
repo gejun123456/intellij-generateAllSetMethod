@@ -14,7 +14,7 @@ import java.util.List;
  * @Description
  */
 public class PsiClassUtils {
-    public static boolean isSystemClass(PsiClass psiClass) {
+    public static boolean isNotSystemClass(PsiClass psiClass) {
         if (psiClass == null) {
             return false;
         }
@@ -55,7 +55,7 @@ public class PsiClassUtils {
     @NotNull
     public static List<PsiMethod> extractSetMethods(PsiClass psiClass) {
         List<PsiMethod> methodList = new ArrayList<>();
-        while (isSystemClass(psiClass)) {
+        while (isNotSystemClass(psiClass)) {
             addSetMethodToList(psiClass, methodList);
             psiClass = psiClass.getSuperClass();
         }
@@ -64,7 +64,7 @@ public class PsiClassUtils {
 
     public static List<PsiMethod> extractGetMethod(PsiClass psiClass) {
         List<PsiMethod> methodList = new ArrayList<>();
-        while (isSystemClass(psiClass)) {
+        while (isNotSystemClass(psiClass)) {
             addGettMethodToList(psiClass, methodList);
             psiClass = psiClass.getSuperClass();
         }
@@ -75,7 +75,7 @@ public class PsiClassUtils {
         if (psiClass == null) {
             return false;
         }
-        while (isSystemClass(psiClass)) {
+        while (isNotSystemClass(psiClass)) {
             for (PsiMethod m : psiClass.getMethods()) {
                 if (isValidSetMethod(m)) {
                     return true;
@@ -91,7 +91,7 @@ public class PsiClassUtils {
         if (psiClass == null) {
             return false;
         }
-        while (isSystemClass(psiClass)) {
+        while (isNotSystemClass(psiClass)) {
             for (PsiMethod m : psiClass.getMethods()) {
                 if (isValidGetMethod(m)) {
                     return true;

@@ -30,7 +30,7 @@ targetCompatibility = 1.8
 
 intellij {
 //    IC-2016.1
-    version 'IC-14.1.4' //IntelliJ IDEA dependency
+    version 'IU-2018.2.3' //IntelliJ IDEA dependency
     plugins 'coverage' //Bundled plugin dependencies
     pluginName 'GenerateAllSetter'
     updateSinceUntilBuild false
