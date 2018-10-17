@@ -39,6 +39,7 @@ intellij {
 //        username 'AmailP'
 //        pluginId '7415'
 //    }
+    plugins 'Kotlin'
 }
 
 dependencies {

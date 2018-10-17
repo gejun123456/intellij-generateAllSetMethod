@@ -35,13 +35,11 @@
 
     <idea-version since-build="141.0"/>
 
+    <depends optional="true" config-file="plugin-kotlin.xml">org.jetbrains.kotlin</depends>
+
     <extensions defaultExtensionNs="com.intellij">
-
         <intentionAction>
-            <className>com.ccnode.codegenerator.view.GenerateMethodXmlAction</className>
-
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction</className>
-
         </intentionAction>
     </extensions>
 </idea-plugin>
