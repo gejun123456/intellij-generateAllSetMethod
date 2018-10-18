@@ -1,5 +1,6 @@
 package com.bruce.intellijplugin.generatesetter.actions;
 
+import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GetInfo;
 import com.bruce.intellijplugin.generatesetter.Parameters;
 import com.bruce.intellijplugin.generatesetter.complexreturntype.*;
@@ -28,7 +29,6 @@ import java.util.*;
  */
 public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
 
-    public static final String GENERATE_SETTER_METHOD = "generate all setter";
     public static final String IS = "is";
     public static final String GET = "get";
 
@@ -553,12 +553,12 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
     @NotNull
     @Override
     public String getFamilyName() {
-        return GENERATE_SETTER_METHOD;
+        return CommonConstants.GENERATE_SETTER_METHOD;
     }
 
     @NotNull
     @Override
     public String getText() {
-        return GENERATE_SETTER_METHOD;
+        return CommonConstants.GENERATE_SETTER_METHOD;
     }
 }

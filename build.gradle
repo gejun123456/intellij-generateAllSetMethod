@@ -30,7 +30,7 @@ targetCompatibility = 1.8
 
 intellij {
 //    IC-2016.1
-    version 'IU-2018.2.3' //IntelliJ IDEA dependency
+    version 'IU-2018.1' //IntelliJ IDEA dependency
     plugins 'coverage' //Bundled plugin dependencies
     pluginName 'GenerateAllSetter'
     updateSinceUntilBuild false
@@ -39,7 +39,7 @@ intellij {
 //        username 'AmailP'
 //        pluginId '7415'
 //    }
-    plugins 'Kotlin'
+    plugins 'Kotlin','PsiViewer:2018.1.2'
 }
 
 dependencies {
