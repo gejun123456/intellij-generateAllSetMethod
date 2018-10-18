@@ -40,6 +40,8 @@ intellij {
 //        pluginId '7415'
 //    }
     plugins 'Kotlin','PsiViewer:2018.1.2'
+    
+    sandboxDirectory 'sandbox'
 }
 
 dependencies {

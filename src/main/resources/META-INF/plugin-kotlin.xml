@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <extensions defaultExtensionNs="com.intellij">
-        <!--<intentionAction>-->
-            <!--<className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction</className>-->
-        <!--</intentionAction>-->
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.koltinActions.GenerateAllSetterForPropertiesAction</className>
+        </intentionAction>
     </extensions>
 </idea-plugin>

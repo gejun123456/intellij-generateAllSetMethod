@@ -444,7 +444,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                         newImportList.add(defaultImportMap
                                 .get(paramInfo.getCollectName()));
                     }
-                    // 使用自带的来搞起
+                    // using default to do it.
                 } else {
                     if (paramInfo.getCollectName() != null) {
                         String defaultImpl = defaultCollections
