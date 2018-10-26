@@ -41,5 +41,7 @@
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction</className>
         </intentionAction>
+
+
     </extensions>
 </idea-plugin>
