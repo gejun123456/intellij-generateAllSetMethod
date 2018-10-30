@@ -365,26 +365,14 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
                 .getInstance(project);
         PsiFile containingFile = element.getContainingFile();
         Document document = psiDocumentManager.getDocument(containingFile);
-        int statementOffset = parent1.getTextOffset();
-        String splitText = "";
-        int cur = statementOffset;
-        String text = document.getText(new TextRange(cur - 1, cur));
-        while (text.equals(" ") || text.equals("\t")) {
-            splitText = text + splitText;
-            cur--;
-            if (cur < 1) {
-                break;
-            }
-            text = document.getText(new TextRange(cur - 1, cur));
-        }
-        splitText = "\n" + splitText;
+        String splitText = PsiToolUtils.calculateSplitText(document, parent1.getTextOffset());
 
         Set<String> newImportList = new HashSet<>();
         boolean hasGuava = PsiToolUtils.checkGuavaExist(project, element);
 
         String buildString = generateStringForNoParam(generateName, methodList,
                 splitText, newImportList, hasGuava);
-        document.insertString(statementOffset + parent1.getText().length(),
+        document.insertString(parent1.getTextOffset() + parent1.getText().length(),
                 buildString);
         PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
         PsiToolUtils.addImportToFile(psiDocumentManager,

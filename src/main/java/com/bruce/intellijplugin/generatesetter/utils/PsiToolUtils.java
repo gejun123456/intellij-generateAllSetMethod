@@ -20,6 +20,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
@@ -139,5 +140,22 @@ public class PsiToolUtils {
 
     private static String extractShortName(String fullName) {
         return fullName.substring(fullName.lastIndexOf(".") + 1);
+    }
+
+    @NotNull
+    public static String calculateSplitText(Document document, int statementOffset) {
+        String splitText = "";
+        int cur = statementOffset;
+        String text = document.getText(new TextRange(cur - 1, cur));
+        while (text.equals(" ") || text.equals("\t")) {
+            splitText = text + splitText;
+            cur--;
+            if (cur < 1) {
+                break;
+            }
+            text = document.getText(new TextRange(cur - 1, cur));
+        }
+        splitText = "\n" + splitText;
+        return splitText;
     }
 }
