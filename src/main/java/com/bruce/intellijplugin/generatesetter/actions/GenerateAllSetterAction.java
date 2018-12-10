@@ -221,7 +221,7 @@ public class GenerateAllSetterAction extends PsiElementBaseIntentionAction {
         }
         // TODO: 2017/8/2 what if two class has the same name
         String insertText = splitText + psiClass.getName() + " " + generateName
-                + "= new " + psiClass.getName() + "();";
+                + " = new " + psiClass.getName() + "();";
         if (info == null) {
             insertText += generateStringForNoParam(generateName, methods,
                     splitText, importList, hasGuava);

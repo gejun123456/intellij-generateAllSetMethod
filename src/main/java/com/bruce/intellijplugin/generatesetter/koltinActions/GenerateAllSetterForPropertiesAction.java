@@ -49,7 +49,7 @@ public class GenerateAllSetterForPropertiesAction extends PsiElementBaseIntentio
 
         StringBuilder builder = new StringBuilder();
         for (PsiField allField : allFields) {
-            builder.append(splitText + propertyName + "." + allField.getName() + "= ");
+            builder.append(splitText + propertyName + "." + allField.getName() + " = ");
         }
 
         document.insertString(property.getTextRange().getEndOffset(),

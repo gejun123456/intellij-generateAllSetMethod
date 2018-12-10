@@ -15,6 +15,7 @@
 package com.bruce.intellijplugin.generatesetter.koltinActions;
 
 import com.bruce.intellijplugin.generatesetter.context.KotlinContext;
+import com.bruce.intellijplugin.generatesetter.utils.PsiClassUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -84,6 +85,11 @@ public class KotlinUtils {
         PsiClass findedClass = findClassWithQuatifiedName(element.getProject(), referenceName, quatifiedName);
 
         if (findedClass == null) {
+            return null;
+        }
+
+
+        if(!PsiClassUtils.checkClassHasValidSetMethod(findedClass)){
             return null;
         }
 
