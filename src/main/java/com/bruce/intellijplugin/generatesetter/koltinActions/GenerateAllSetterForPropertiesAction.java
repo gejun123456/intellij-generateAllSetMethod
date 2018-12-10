@@ -16,6 +16,7 @@ package com.bruce.intellijplugin.generatesetter.koltinActions;
 
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.context.KotlinContext;
+import com.bruce.intellijplugin.generatesetter.utils.PsiClassUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiDocumentUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiToolUtils;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
@@ -27,6 +28,8 @@ import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.*;
+
+import java.util.Locale;
 
 /**
  * @author bruce ge
@@ -40,7 +43,7 @@ public class GenerateAllSetterForPropertiesAction extends PsiElementBaseIntentio
         KtProperty property = currentElementContext.getProperty();
         String propertyName = property.getName();
 
-        PsiField[] allFields = currentElementContext.getCurrentClass().getAllFields();
+        PsiMethod[] methods = currentElementContext.getCurrentClass().getAllMethods();
 
         PsiDocumentManager instance = PsiDocumentManager.getInstance(project);
         Document document = instance.getDocument(element.getContainingFile());
@@ -48,14 +51,31 @@ public class GenerateAllSetterForPropertiesAction extends PsiElementBaseIntentio
         String splitText = PsiToolUtils.calculateSplitText(document, property.getTextRange().getStartOffset());
 
         StringBuilder builder = new StringBuilder();
-        for (PsiField allField : allFields) {
-            builder.append(splitText + propertyName + "." + allField.getName() + " = ");
+        for (PsiMethod m : methods) {
+            if(PsiClassUtils.isValidSetMethod(m)){
+                String methodPropName = methodToProperty(m.getName());
+                builder.append(splitText + propertyName + "." + methodPropName + " = ");
+            }
         }
 
         document.insertString(property.getTextRange().getEndOffset(),
                 builder.toString());
 
         PsiDocumentUtils.commitAndSaveDocument(instance, document);
+    }
+
+    public static String methodToProperty(String name) {
+        if (name.startsWith("set")) {
+            name = name.substring(3);
+        } else {
+//      throw new ReflectionException("Error parsing property name '" + name + "'.  Didn't start with 'is', 'get' or 'set'.");
+            return "";
+        }
+
+        if (name.length() == 1 || (name.length() > 1 && !Character.isUpperCase(name.charAt(1)))) {
+            name = name.substring(0, 1).toLowerCase(Locale.ENGLISH) + name.substring(1);
+        }
+        return name;
     }
 
     @Override
