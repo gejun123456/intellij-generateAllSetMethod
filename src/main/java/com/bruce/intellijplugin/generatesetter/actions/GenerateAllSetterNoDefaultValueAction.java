@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
  * @author bruce ge
  */
 public class GenerateAllSetterNoDefaultValueAction extends GenerateAllSetterBase {
-    public GenerateAllSetterNoDefaultValueAction(GenerateAllHandler generateAllHandler) {
+    public GenerateAllSetterNoDefaultValueAction() {
         super(new GenerateAllHandlerAdapter() {
             @Override
             public boolean shouldAddDefaultValue() {

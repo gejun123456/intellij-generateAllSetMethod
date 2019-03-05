@@ -45,7 +45,7 @@ import java.util.*;
 public class GenerateAllSetterAction extends GenerateAllSetterBase {
 
 
-    public GenerateAllSetterAction(GenerateAllHandler generateAllHandler) {
+    public GenerateAllSetterAction() {
         super(new GenerateAllHandlerAdapter() {
             @Override
             public boolean shouldAddDefaultValue() {

@@ -20,7 +20,7 @@ import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
  * @author bruce ge
  */
 public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
-    public AssertJAssertAllGetterAction(GenerateAllHandler generateAllHandler) {
+    public AssertJAssertAllGetterAction() {
         super(new GenerateAllHandlerAdapter() {
             @Override
             public boolean isSetter() {
