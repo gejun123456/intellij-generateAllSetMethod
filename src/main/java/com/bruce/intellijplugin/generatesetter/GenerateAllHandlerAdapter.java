@@ -12,10 +12,31 @@
  *    along with this program;
  */
 
-package com.bruce.intellijplugin.generatesetter.actions;
+package com.bruce.intellijplugin.generatesetter;
+
+import com.bruce.intellijplugin.generatesetter.actions.GenerateAllHandler;
 
 /**
  * @author bruce ge
  */
-public class GenerateAllSetterWithDefaultValueAction extends GenerateAllSetterAction {
+public class GenerateAllHandlerAdapter implements GenerateAllHandler {
+    @Override
+    public boolean shouldAddDefaultValue() {
+        return false;
+    }
+
+    @Override
+    public boolean isSetter() {
+        return true;
+    }
+
+    @Override
+    public boolean isFromMethod() {
+        return false;
+    }
+
+    @Override
+    public String formatLine(String line) {
+        return line;
+    }
 }

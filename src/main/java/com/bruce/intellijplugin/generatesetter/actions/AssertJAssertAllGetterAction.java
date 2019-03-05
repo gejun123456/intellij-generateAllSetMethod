@@ -12,12 +12,25 @@
  *    along with this program;
  */
 
-package com.bruce.intellijplugin.generatesetter;
+package com.bruce.intellijplugin.generatesetter.actions;
+
+import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
 
 /**
  * @author bruce ge
  */
-public class CommonConstants {
-    public static final String GENERATE_SETTER_METHOD = "Generate all setter";
-    public static final String GENERATE_SETTER_METHOD_NO_DEAULT_VALUE = "Generate all setter no default value";
+public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
+    public AssertJAssertAllGetterAction(GenerateAllHandler generateAllHandler) {
+        super(new GenerateAllHandlerAdapter() {
+            @Override
+            public boolean isSetter() {
+                return false;
+            }
+
+            @Override
+            public String formatLine(String line) {
+                return "assertThat(" + line + ").isEqualTo()";
+            }
+        });
+    }
 }

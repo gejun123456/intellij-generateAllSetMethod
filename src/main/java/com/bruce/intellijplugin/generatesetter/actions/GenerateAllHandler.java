@@ -12,12 +12,17 @@
  *    along with this program;
  */
 
-package com.bruce.intellijplugin.generatesetter;
+package com.bruce.intellijplugin.generatesetter.actions;
 
 /**
  * @author bruce ge
  */
-public class CommonConstants {
-    public static final String GENERATE_SETTER_METHOD = "Generate all setter";
-    public static final String GENERATE_SETTER_METHOD_NO_DEAULT_VALUE = "Generate all setter no default value";
+public interface GenerateAllHandler {
+    public boolean shouldAddDefaultValue();
+
+    boolean isSetter();
+
+    boolean isFromMethod();
+
+    String formatLine(String line);
 }

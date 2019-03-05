@@ -85,6 +85,13 @@
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction</className>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterNoDefaultValueAction</className>
+        </intentionAction>
+
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.AssertJAssertAllGetterAction</className>
+        </intentionAction>
 
     </extensions>
 </idea-plugin>
