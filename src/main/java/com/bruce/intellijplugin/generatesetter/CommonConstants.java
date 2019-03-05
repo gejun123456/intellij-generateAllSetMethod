@@ -18,6 +18,7 @@ package com.bruce.intellijplugin.generatesetter;
  * @author bruce ge
  */
 public class CommonConstants {
-    public static final String GENERATE_SETTER_METHOD = "Generate all setter";
+    public static final String GENERATE_SETTER_METHOD = "Generate all setter with default value";
     public static final String GENERATE_SETTER_METHOD_NO_DEAULT_VALUE = "Generate all setter no default value";
+    public static final String ASSERTALLPROPS = "Assert all getters";
 }

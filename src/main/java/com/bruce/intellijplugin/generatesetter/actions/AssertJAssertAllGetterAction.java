@@ -14,7 +14,9 @@
 
 package com.bruce.intellijplugin.generatesetter.actions;
 
+import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author bruce ge
@@ -29,8 +31,15 @@ public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
 
             @Override
             public String formatLine(String line) {
-                return "assertThat(" + line + ").isEqualTo()";
+                return "assertThat(" + line.substring(0,line.length()-1) + ").isEqualTo()";
             }
         });
+    }
+
+
+    @NotNull
+    @Override
+    public String getText() {
+        return CommonConstants.ASSERTALLPROPS;
     }
 }
