@@ -16,6 +16,10 @@ package com.bruce.intellijplugin.generatesetter.actions;
 
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -31,7 +35,7 @@ public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
 
             @Override
             public String formatLine(String line) {
-                return "assertThat(" + line.substring(0,line.length()-1) + ").isEqualTo()";
+                return "assertThat(" + line.substring(0, line.length() - 1) + ").isEqualTo();";
             }
         });
     }
@@ -41,5 +45,14 @@ public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
     @Override
     public String getText() {
         return CommonConstants.ASSERTALLPROPS;
+    }
+
+    @Override
+    public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
+        boolean inTestSourceContent = ProjectRootManager.getInstance(element.getProject()).getFileIndex().isInTestSourceContent(element.getContainingFile().getVirtualFile());
+        if (inTestSourceContent) {
+            return super.isAvailable(project, editor, element);
+        }
+        return false;
     }
 }
