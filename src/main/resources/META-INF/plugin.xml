@@ -21,6 +21,11 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.2</strong>
+        <ul>
+            <li>[NEW]add generate with all setter no default value</li>
+            <li>[NEW]add generate assert all getter</li>
+        </ul>
         <strong>2.1</strong>
         <ul>
             <li>[NEW]add base support for kotlin</li>
