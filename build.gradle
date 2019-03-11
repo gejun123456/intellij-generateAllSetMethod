@@ -39,7 +39,7 @@ intellij {
 //        username 'AmailP'
 //        pluginId '7415'
 //    }
-    plugins 'Kotlin'
+    plugins 'Kotlin', 'org.nik.presentation-assistant:1.0.1'
     
     sandboxDirectory 'sandbox'
 }
