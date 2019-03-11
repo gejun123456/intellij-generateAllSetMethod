@@ -6,9 +6,11 @@
     <description><![CDATA[
     <p><a href="https://github.com/gejun123456/intellij-generateAllSetMethod">GitHub</a>
       |&nbsp<a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a></p>
+      <p> 一键调用一个对象的所有的set方法</p>
       <p> generate call to class all setter method by alt+enter on the variable class</p>
       <p> generate a converter two object when they have same field</p>
       <p> generate default value when returnType is List Set Map </p>
+      <p> generate call to assertThat on all getter method
       <p> like a user class has setName, setPassword methods</p>
       <p> <b>User</b> user = new User();</p>
       <p> then alt+enter on User</p>
