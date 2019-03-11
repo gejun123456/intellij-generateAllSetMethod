@@ -19,7 +19,9 @@ import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -49,7 +51,15 @@ public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        boolean inTestSourceContent = ProjectRootManager.getInstance(element.getProject()).getFileIndex().isInTestSourceContent(element.getContainingFile().getVirtualFile());
+        PsiFile containingFile = element.getContainingFile();
+        if(containingFile==null){
+            return false;
+        }
+        VirtualFile virtualFile = containingFile.getVirtualFile();
+        if(virtualFile==null){
+            return false;
+        }
+        boolean inTestSourceContent = ProjectRootManager.getInstance(element.getProject()).getFileIndex().isInTestSourceContent(virtualFile);
         if (inTestSourceContent) {
             return super.isAvailable(project, editor, element);
         }
