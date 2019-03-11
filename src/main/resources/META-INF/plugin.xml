@@ -23,6 +23,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.3</strong>
+        <ul>
+            <li>[FIX]fix null pointer</li>
+        </ul>
         <strong>2.2</strong>
         <ul>
             <li>[NEW]add generate with all setter no default value</li>
