@@ -104,5 +104,9 @@
             <className>com.bruce.intellijplugin.generatesetter.actions.AssertJAssertAllGetterAction</className>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateSetterGetterFromFunctionAction
+            </className>
+        </intentionAction>
     </extensions>
 </idea-plugin>
