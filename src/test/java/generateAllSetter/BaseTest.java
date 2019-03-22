@@ -12,14 +12,22 @@
  *    along with this program;
  */
 
-package com.bruce.intellijplugin.generatesetter;
+package generateAllSetter;
+
+import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 
 /**
  * @author bruce ge
  */
-public class CommonConstants {
-    public static final String GENERATE_SETTER_METHOD = "Generate all setter with default value";
-    public static final String GENERATE_SETTER_METHOD_NO_DEAULT_VALUE = "Generate all setter no default value";
-    public static final String ASSERTALLPROPS = "Assert all getters";
-    public static final String GENERATE_CONVERTER_FROM_METHOD = "Generate setter getter convert";
+public class BaseTest extends LightCodeInsightFixtureTestCase {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/resources/testData";
+    }
 }
