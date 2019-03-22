@@ -19,7 +19,7 @@ import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 /**
  * @author bruce ge
  */
-public class BaseTest extends LightCodeInsightFixtureTestCase {
+public abstract class BaseTest extends LightCodeInsightFixtureTestCase {
 
     @Override
     protected void setUp() throws Exception {
