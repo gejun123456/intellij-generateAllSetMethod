@@ -52,4 +52,4 @@ dependencies {
 }
 
 group 'com.bruce.intellijplugin'
-version '2.3'
+version '2.4'
