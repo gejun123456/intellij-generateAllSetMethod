@@ -90,7 +90,6 @@ public class GenerateAllSetterForPropertiesAction extends PsiElementBaseIntentio
     }
 
 
-    @Nls(capitalization = Nls.Capitalization.Sentence)
     @NotNull
     @Override
     public String getFamilyName() {

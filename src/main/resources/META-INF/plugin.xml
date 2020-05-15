@@ -2,8 +2,8 @@
     <id>com.bruce.intellijplugin.generatesetter</id>
     <name>GenerateAllSetter</name>
     <vendor email="gejun123456@gmail.com" url="https://github.com/gejun123456/intellij-generateAllSetMethod">bruceGe</vendor>
-
     <description><![CDATA[
+
     <p><a href="https://github.com/gejun123456/intellij-generateAllSetMethod">GitHub</a>
       |&nbsp<a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a></p>
       <p> 一键调用一个对象的所有的set方法</p>
@@ -23,6 +23,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.5</strong>
+        <ul>
+            <li>[FIX]compatible for 2020 version</li>
+        </ul>
         <strong>2.4</strong>
         <ul>
             <li>[FIX]fix Generate from method getter setter converter not work</li>
@@ -91,7 +95,9 @@
     ]]>
     </change-notes>
 
-    <idea-version since-build="141.0"/>
+    <idea-version since-build="183"/>
+
+    <depends>com.intellij.modules.java</depends>
 
     <depends optional="true" config-file="plugin-kotlin.xml">org.jetbrains.kotlin</depends>
 

@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'}
+        maven { url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'}
     }
 }
 
@@ -30,7 +30,8 @@ targetCompatibility = 1.8
 
 intellij {
 //    IC-2016.1
-    version 'IU-2018.3' //IntelliJ IDEA dependency
+//    version 'IU-2018.3' //IntelliJ IDEA dependency
+    localPath 'F:\\jetbrainIdeInstall\\apps\\IDEA-U\\ch-0\\201.6668.121'
     plugins 'coverage' //Bundled plugin dependencies
     pluginName 'GenerateAllSetter'
     updateSinceUntilBuild false
@@ -39,7 +40,7 @@ intellij {
 //        username 'AmailP'
 //        pluginId '7415'
 //    }
-    plugins 'Kotlin', 'org.nik.presentation-assistant:1.0.1'
+    plugins 'Kotlin', 'org.nik.presentation-assistant:1.0.1','java'
     
     sandboxDirectory 'sandbox'
 }
@@ -52,4 +53,4 @@ dependencies {
 }
 
 group 'com.bruce.intellijplugin'
-version '2.4'
+version '2.5'
