@@ -40,7 +40,9 @@ public class PsiClassUtils {
     }
 
     public static boolean isValidSetMethod(PsiMethod m) {
-        return m.hasModifierProperty("public") && !m.hasModifierProperty("static") && m.getName().startsWith("set");
+        return m.hasModifierProperty("public") &&
+                !m.hasModifierProperty("static") &&
+                (m.getName().startsWith("set") || m.getName().startsWith("with"));
     }
 
     public static boolean isValidGetMethod(PsiMethod m) {
