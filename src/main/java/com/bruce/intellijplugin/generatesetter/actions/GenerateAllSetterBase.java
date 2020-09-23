@@ -44,6 +44,8 @@ import java.util.*;
 public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionAction {
     public static final String IS = "is";
     public static final String GET = "get";
+    private static final String SET_SETTER_PREFIX = "set";
+    private static final String WITH_SETTER_PREFIX = "with";
     private final GenerateAllHandler generateAllHandler;
 
     public GenerateAllSetterBase(GenerateAllHandler generateAllHandler) {
@@ -245,8 +247,14 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         StringBuilder builder = new StringBuilder();
         builder.append(splitText);
         for (PsiMethod method : methodList) {
-            if (method.getName().startsWith("set")) {
-                String fieldToLower = method.getName().substring(3)
+            String setterMethodNamePrefix =
+                    method.getName().startsWith(SET_SETTER_PREFIX)
+                            ? SET_SETTER_PREFIX
+                            : method.getName().startsWith(WITH_SETTER_PREFIX)
+                                    ? WITH_SETTER_PREFIX
+                                    : null;
+            if (setterMethodNamePrefix != null) {
+                String fieldToLower = method.getName().substring(setterMethodNamePrefix.length())
                         .toLowerCase();
                 PsiMethod s = info.getNameToMethodMap().get(fieldToLower);
                 if (s != null) {
