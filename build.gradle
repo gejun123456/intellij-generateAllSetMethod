@@ -31,16 +31,18 @@ targetCompatibility = 1.8
 intellij {
 //    IC-2016.1
 //    version 'IU-2018.3' //IntelliJ IDEA dependency
-    localPath 'F:\\jetbrainIdeInstall\\apps\\IDEA-U\\ch-0\\201.6668.121'
     plugins 'coverage' //Bundled plugin dependencies
     pluginName 'GenerateAllSetter'
     updateSinceUntilBuild false
+
+    version 'IU-2018.3'
+    sandboxDirectory 'sandbox'
 //    需要来填写publish这块 类似
 //    publish {
 //        username 'AmailP'
 //        pluginId '7415'
 //    }
-    plugins 'Kotlin', 'org.nik.presentation-assistant:1.0.1','java'
+    plugins 'Kotlin', 'org.nik.presentation-assistant:1.0.1'
     
     sandboxDirectory 'sandbox'
 }
