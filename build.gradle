@@ -42,8 +42,8 @@ intellij {
 //        username 'AmailP'
 //        pluginId '7415'
 //    }
-    plugins 'Kotlin', 'org.nik.presentation-assistant:1.0.1'
-    
+    plugins 'Kotlin', 'org.nik.presentation-assistant:1.0.1','Lombook Plugin:0.31-2018.3'
+
     sandboxDirectory 'sandbox'
 }
 
@@ -55,4 +55,4 @@ dependencies {
 }
 
 group 'com.bruce.intellijplugin'
-version '2.5'
+version '2.6'

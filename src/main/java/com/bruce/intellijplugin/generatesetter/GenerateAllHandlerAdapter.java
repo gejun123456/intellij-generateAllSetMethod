@@ -39,4 +39,9 @@ public class GenerateAllHandlerAdapter implements GenerateAllHandler {
     public String formatLine(String line) {
         return line;
     }
+
+    @Override
+    public boolean forBuilder() {
+        return false;
+    }
 }

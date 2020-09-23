@@ -23,6 +23,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.6</strong>
+        <ul>
+            <li>[NEW]support lombok builder using with(Thanks https://github.com/axesipov)</li>
+        </ul>
         <strong>2.5</strong>
         <ul>
             <li>[NEW]compatible for 2020 version</li>
@@ -104,6 +108,11 @@
     <extensions defaultExtensionNs="com.intellij">
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction</className>
+        </intentionAction>
+
+
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateWithBuilderAction</className>
         </intentionAction>
 
         <intentionAction>

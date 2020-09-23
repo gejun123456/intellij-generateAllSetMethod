@@ -46,6 +46,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     public static final String GET = "get";
     private static final String SET_SETTER_PREFIX = "set";
     private static final String WITH_SETTER_PREFIX = "with";
+    public static final String STATIC = "static";
     private final GenerateAllHandler generateAllHandler;
 
     public GenerateAllSetterBase(GenerateAllHandler generateAllHandler) {
@@ -251,8 +252,8 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                     method.getName().startsWith(SET_SETTER_PREFIX)
                             ? SET_SETTER_PREFIX
                             : method.getName().startsWith(WITH_SETTER_PREFIX)
-                                    ? WITH_SETTER_PREFIX
-                                    : null;
+                            ? WITH_SETTER_PREFIX
+                            : null;
             if (setterMethodNamePrefix != null) {
                 String fieldToLower = method.getName().substring(setterMethodNamePrefix.length())
                         .toLowerCase();
@@ -527,6 +528,19 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     public boolean isAvailable(@NotNull Project project, Editor editor,
                                @NotNull PsiElement element) {
         boolean setter = generateAllHandler.isSetter();
+        if (generateAllHandler.forBuilder()) {
+            PsiClass localVarialbeContainingClass = getLocalVarialbeContainingClass(element);
+            if (localVarialbeContainingClass == null) {
+                return false;
+            }
+            PsiMethod[] methods = localVarialbeContainingClass.getMethods();
+            for (PsiMethod method : methods) {
+                if (method.getName().equals(CommonConstants.BUILDER_METHOD_NAME)&&method.hasModifierProperty(STATIC)) {
+                    return true;
+                }
+            }
+            return false;
+        }
         Boolean validAsLocalVariableWithSetterOrGetterMethod = isValidAsLocalVariableWithSetterOrGetterMethod(element, setter);
         if (validAsLocalVariableWithSetterOrGetterMethod) {
             return validAsLocalVariableWithSetterOrGetterMethod;
@@ -563,21 +577,29 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
 
     @NotNull
     private Boolean isValidAsLocalVariableWithSetterOrGetterMethod(@NotNull PsiElement element, boolean setter) {
-        PsiElement psiParent = PsiTreeUtil.getParentOfType(element,
-                PsiLocalVariable.class);
-        if (psiParent == null) {
+        PsiClass psiClass = getLocalVarialbeContainingClass(element);
+        if (psiClass == null) {
             return false;
         }
-        PsiLocalVariable psiLocal = (PsiLocalVariable) psiParent;
-        if (!(psiLocal.getParent() instanceof PsiDeclarationStatement)) {
-            return false;
-        }
-        PsiClass psiClass = PsiTypesUtil.getPsiClass(psiLocal.getType());
         if (setter) {
             return PsiClassUtils.checkClassHasValidSetMethod(psiClass);
         } else {
             return PsiClassUtils.checkClasHasValidGetMethod(psiClass);
         }
+    }
+
+    public static PsiClass getLocalVarialbeContainingClass(@NotNull PsiElement element) {
+        PsiElement psiParent = PsiTreeUtil.getParentOfType(element,
+                PsiLocalVariable.class);
+        if (psiParent == null) {
+            return null;
+        }
+        PsiLocalVariable psiLocal = (PsiLocalVariable) psiParent;
+        if (!(psiLocal.getParent() instanceof PsiDeclarationStatement)) {
+            return null;
+        }
+        PsiClass psiClass = PsiTypesUtil.getPsiClass(psiLocal.getType());
+        return psiClass;
     }
 
     private static boolean notObjectClass(PsiClass psiClass) {

@@ -25,4 +25,7 @@ public interface GenerateAllHandler {
     boolean isFromMethod();
 
     String formatLine(String line);
+
+
+    boolean forBuilder();
 }
