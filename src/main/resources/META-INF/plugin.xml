@@ -23,6 +23,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.7</strong>
+        <ul>
+            <li>[FIX]fix intention action text</li>
+        </ul>
         <strong>2.6</strong>
         <ul>
             <li>[NEW]support lombok builder using with(Thanks https://github.com/axesipov)</li>
