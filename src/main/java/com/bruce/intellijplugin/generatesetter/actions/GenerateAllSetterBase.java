@@ -438,7 +438,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                     newImportList.add(importType);
                 }
             } else {
-                // shall check with import list to use.
+                // shall check which import list to use.
                 Parameters paramInfo = PsiToolUtils
                         .extractParamInfo(parameter.getType());
                 if (paramInfo.getCollectName() != null && guavaTypeMaps
@@ -479,9 +479,15 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                                 .getRealPackage();
                         // todo could add more to the default package values.
                         String s = defaultPacakgeValues.get(realPackage);
+                        final PsiClass psiClassOfParameter = PsiTypesUtil.getPsiClass(parameter.getType());
                         if (s != null) {
                             builder.append(s);
-                        } else {
+                        }
+                        else if (psiClassOfParameter!=null && psiClassOfParameter.isEnum()) {
+                            final PsiField[] allFields = psiClassOfParameter.getAllFields();
+                            Arrays.stream(allFields).findFirst().ifPresent(field -> builder.append(psiClassOfParameter.getName()).append(".").append(field.getName()));
+                        }
+                        else {
                             builder.append("new "
                                     + paramInfo.getParams().get(0).getRealName()
                                     + "()");
