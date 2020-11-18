@@ -79,6 +79,6 @@ public class GenerateWithBuilderAction extends GenerateAllSetterBase {
     @NotNull
     @Override
     public String getText() {
-        return CommonConstants.GENERATE_SETTER_METHOD;
+        return CommonConstants.GENERATE_BUILDER_METHOD;
     }
 }
