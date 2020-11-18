@@ -26,6 +26,7 @@
         <strong>2.7</strong>
         <ul>
             <li>[FIX]fix intention action text</li>
+            <li>[NEW]enum type support</li>
         </ul>
         <strong>2.6</strong>
         <ul>
