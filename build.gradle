@@ -1,14 +1,16 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven { url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'}
-    }
-}
+//buildscript {
+//    repositories {
+//        mavenCentral()
+////        maven { url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'}
+//    }
+//}
 
 
 plugins {
-    id "org.jetbrains.intellij" version "0.3.5"
+    id 'java'
+    id 'org.jetbrains.intellij' version '1.1.2'
 }
+
 
 repositories {
     mavenCentral()
@@ -27,24 +29,28 @@ apply plugin: 'org.jetbrains.intellij'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-
-intellij {
-//    IC-2016.1
-//    version 'IU-2018.3' //IntelliJ IDEA dependency
-    plugins 'coverage' //Bundled plugin dependencies
-    pluginName 'GenerateAllSetter'
-    updateSinceUntilBuild false
-
-    version 'IU-2018.3'
-    sandboxDirectory 'sandbox'
 //    需要来填写publish这块 类似
 //    publish {
 //        username 'AmailP'
 //        pluginId '7415'
 //    }
-    plugins 'Kotlin', 'org.nik.presentation-assistant:1.0.1','Lombook Plugin:0.31-2018.3'
 
-    sandboxDirectory 'sandbox'
+
+intellij {
+//    IC-2016.1
+//    version 'IU-2018.3' //IntelliJ IDEA dependency
+
+    pluginName.set('GenerateAllSetter')
+    version.set('2018.3')
+    type.set('IU')
+    downloadSources.set(false)
+    updateSinceUntilBuild.set(true)
+//    plugins.set('coverage') //Bundled plugin dependencies
+//    sandboxDirectory.set('sandbox')
+//
+    plugins.set([ 'Kotlin', 'org.nik.presentation-assistant:1.0.1', 'Lombook Plugin:0.31-2018.3'])
+//
+//    sandboxDirectory.set('sandbox')
 }
 
 dependencies {
@@ -55,4 +61,4 @@ dependencies {
 }
 
 group 'com.bruce.intellijplugin'
-version '2.7'
+version '2.8'

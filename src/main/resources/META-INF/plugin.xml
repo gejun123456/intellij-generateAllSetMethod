@@ -23,6 +23,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <strong>2.8</strong>
+        <ul>
+            <li>[FIX]fix exception in 2021.2</li>
+        </ul>
         <strong>2.7</strong>
         <ul>
             <li>[FIX]fix intention action text</li>
