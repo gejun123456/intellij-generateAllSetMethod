@@ -44,7 +44,7 @@ intellij {
     version.set('2018.3')
     type.set('IU')
     downloadSources.set(false)
-    updateSinceUntilBuild.set(true)
+    updateSinceUntilBuild.set(false)
 //    plugins.set('coverage') //Bundled plugin dependencies
 //    sandboxDirectory.set('sandbox')
 //
