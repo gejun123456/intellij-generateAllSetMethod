@@ -40,12 +40,9 @@ import java.util.*;
  */
 public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
 
-
     public Map<String, PsiType[]> genericListMap = new HashMap<>();
 
-    @NotNull
-    private static String extractSplitText(PsiMethod method,
-                                           Document document) {
+    private static String extractSplitText(PsiMethod method, Document document) {
         int startOffset = method.getTextRange().getStartOffset();
         int lastLine = startOffset - 1;
         String text = document.getText(new TextRange(lastLine, lastLine + 1));
@@ -68,37 +65,59 @@ public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
         return splitText;
     }
 
+    @NotNull
+    public static String calculateSplitText(Document document, int statementOffset, String addition) {
+        // 取得要计算的行有代码地方的初始 offset, 即 statementOffset
+        // 根据这个offset 往前遍历取得其缩进, 可能为 空格或 \t
+        // 若需要在此基础上再缩进一次, 可对参数 addition 赋值 4个空格
+        String splitText = "";
+        int cur = statementOffset;
+        String text = document.getText(new TextRange(cur - 1, cur));
+        while (text.equals(" ") || text.equals("\t")) {
+            splitText = text + splitText;
+            cur--;
+            if (cur < 1) {
+                break;
+            }
+            text = document.getText(new TextRange(cur - 1, cur));
+        }
+        splitText = "\n" + addition + splitText;
+        return splitText;
+    }
+
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
         PsiLocalVariable psiLocal = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class);
-        HashSet<String> newImportList = new HashSet<>();
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
         PsiFile containingFile = element.getContainingFile();
         Document document = psiDocumentManager.getDocument(containingFile);
         if (psiLocal != null) {
             PsiElement parent = psiLocal.getParent();
-            String splitText = PsiToolUtils.calculateSplitText(document, parent.getTextOffset());
-            String buildString = handleWithPsiType(psiLocal.getType(), psiLocal.getName(), splitText, newImportList);
-            document.insertString(parent.getTextOffset() + parent.getText().length(), buildString);
-            PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
-            PsiToolUtils.addImportToFile(psiDocumentManager,
-                    (PsiJavaFile) containingFile, document, newImportList);
+            String splitText = calculateSplitText(document, parent.getTextOffset(), "");
+            int textOffset = parent.getTextOffset() + parent.getText().length();
+            handleWithPsiType(document, psiDocumentManager, containingFile, psiLocal.getType(), psiLocal.getName(), splitText, textOffset + 1);
         }
         PsiParameter psiParameter = PsiTreeUtil.getParentOfType(element, PsiParameter.class);
         if (psiParameter != null) {
-            PsiElement parent0 = psiParameter.getParent().getParent();
+            PsiElement parent = psiParameter.getParent();
+            PsiElement parent0 = parent.getParent();
             if (parent0 instanceof PsiMethod) {
                 PsiMethod psiMethod = (PsiMethod) parent0;
-                String splitText = extractSplitText(psiMethod, document);
-                String buildString = handleWithPsiType(psiParameter.getType(), psiParameter.getName(), splitText, newImportList);
-                document.insertString(psiMethod.getBody().getTextOffset() + 1, buildString);
-                PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
-                PsiToolUtils.addImportToFile(psiDocumentManager, (PsiJavaFile) containingFile, document, newImportList);
+                String splitText = calculateSplitText(document, psiMethod.getTextOffset(), "    ");
+                int insertOffset = psiMethod.getBody().getTextOffset() + 1;
+                handleWithPsiType(document, psiDocumentManager, containingFile, psiParameter.getType(), psiParameter.getName(), splitText, insertOffset);
+            }
+            if (parent instanceof PsiForeachStatement) {
+                PsiForeachStatement psiForeachStatement = (PsiForeachStatement) parent;
+                String splitText = calculateSplitText(document, psiForeachStatement.getTextOffset(), "    ");
+                int insertOffset = psiForeachStatement.getBody().getTextOffset() + 1;
+                handleWithPsiType(document, psiDocumentManager, containingFile, psiParameter.getType(), psiParameter.getName(), splitText, insertOffset);
             }
         }
     }
 
-    private String handleWithPsiType(PsiType psiType, String generateName, String splitText, Set<String> newImportList) {
+    private void handleWithPsiType(Document document, PsiDocumentManager psiDocumentManager, PsiFile containingFile, PsiType psiType, String generateName, String splitText, int insertOffset) {
+        HashSet<String> newImportList = new HashSet<>();
         PsiClass psiClass = PsiTypesUtil.getPsiClass(psiType);
         if (psiType instanceof PsiClassReferenceType) {
             PsiClassReferenceType referenceType = (PsiClassReferenceType) psiType;
@@ -106,11 +125,13 @@ public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
         }
         List<PsiMethod> methodList = PsiClassUtils.extractGetMethod(psiClass);
         if (methodList.size() == 0) {
-            return generateName;
+            return;
         }
 
-        return generateStringForGetter(generateName, methodList,
-                splitText, newImportList);
+        String buildString = generateStringForGetter(generateName, methodList, splitText, newImportList);
+        document.insertString(insertOffset, buildString);
+        PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+        PsiToolUtils.addImportToFile(psiDocumentManager, (PsiJavaFile) containingFile, document, newImportList);
     }
 
     private String generateStringForGetter(String generateName, List<PsiMethod> methodList, String splitText, Set<String> newImportList) {
@@ -433,11 +454,11 @@ public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
         PsiClass localVariableContainingClass = getLocalVariableContainingClass(element);
         if (localVariableContainingClass != null) {
 
-            return PsiClassUtils.checkClassHasValidSetMethod(localVariableContainingClass);
+            return PsiClassUtils.checkClasHasValidGetMethod(localVariableContainingClass);
         }
         PsiClass methodParameterContainingClass = getMethodParameterContainingClass(element);
         if (methodParameterContainingClass != null) {
-            return PsiClassUtils.checkClassHasValidSetMethod(methodParameterContainingClass);
+            return PsiClassUtils.checkClasHasValidGetMethod(methodParameterContainingClass);
         }
         return false;
     }
