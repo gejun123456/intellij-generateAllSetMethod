@@ -23,6 +23,7 @@ public class CommonConstants {
     public static final String GENERATE_BUILDER_METHOD = "Generate builder chain call";
     public static final String GENERATE_SETTER_METHOD_NO_DEAULT_VALUE = "Generate all setter no default value";
     public static final String ASSERTALLPROPS = "Assert all getters";
+    public static final String GENERATE_GETTER_METHOD = "Generate all getter";
     public static final String GENERATE_CONVERTER_FROM_METHOD = "Generate setter getter converter";
 
     public static final String BUILDER_METHOD_NAME = "builder";
