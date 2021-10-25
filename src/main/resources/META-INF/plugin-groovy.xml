@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.groovyActions.GenerateAllSetterAction</className>
+        </intentionAction>
+    </extensions>
+</idea-plugin>

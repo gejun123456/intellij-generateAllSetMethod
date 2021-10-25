@@ -42,13 +42,13 @@ intellij {
 
     pluginName.set('GenerateAllSetter')
     version.set('2018.3')
-    type.set('IU')
-    downloadSources.set(false)
+    type.set('IC')
+    downloadSources.set(true)
     updateSinceUntilBuild.set(false)
 //    plugins.set('coverage') //Bundled plugin dependencies
 //    sandboxDirectory.set('sandbox')
 //
-    plugins.set([ 'Kotlin', 'org.nik.presentation-assistant:1.0.1', 'Lombook Plugin:0.31-2018.3'])
+    plugins = ['Kotlin', 'org.nik.presentation-assistant:1.0.1', 'Lombook Plugin:0.31-2018.3', 'Groovy']
 //
 //    sandboxDirectory.set('sandbox')
 }
