@@ -19,14 +19,19 @@ import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * @author bruce ge
+ * generate setter methods with accessors chain
+ *
+ * @author codelife
+ * @version 1.0
+ * @date 2021-12-28 13:47
+ * @since 1.0
  */
-public class GenerateAllSetterNoDefaultValueAction extends GenerateAllSetterBase {
-    public GenerateAllSetterNoDefaultValueAction() {
+public class GenerateWithAccessorsAction extends GenerateAllSetterBase {
+    public GenerateWithAccessorsAction() {
         super(new GenerateAllHandlerAdapter() {
             @Override
-            public boolean shouldAddDefaultValue() {
-                return false;
+            public boolean forAccessor() {
+                return true;
             }
         });
     }
@@ -34,6 +39,6 @@ public class GenerateAllSetterNoDefaultValueAction extends GenerateAllSetterBase
     @NotNull
     @Override
     public String getText() {
-        return CommonConstants.GENERATE_SETTER_METHOD_NO_DEFAULT_VALUE;
+        return CommonConstants.GENERATE_ACCESSORS_METHOD;
     }
 }
