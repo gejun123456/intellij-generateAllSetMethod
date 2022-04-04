@@ -119,9 +119,12 @@
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction</className>
         </intentionAction>
 
-
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateWithBuilderAction</className>
+        </intentionAction>
+
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateWithAccessorsAction</className>
         </intentionAction>
 
         <intentionAction>

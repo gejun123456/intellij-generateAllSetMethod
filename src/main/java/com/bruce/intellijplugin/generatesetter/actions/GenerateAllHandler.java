@@ -26,6 +26,7 @@ public interface GenerateAllHandler {
 
     String formatLine(String line);
 
-
     boolean forBuilder();
+
+    boolean forAccessor();
 }

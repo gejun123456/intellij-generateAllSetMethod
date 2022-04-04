@@ -46,7 +46,7 @@ public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
     @NotNull
     @Override
     public String getText() {
-        return CommonConstants.ASSERTALLPROPS;
+        return CommonConstants.ASSERT_ALL_PROPS;
     }
 
     @Override

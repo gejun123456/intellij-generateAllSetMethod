@@ -61,4 +61,4 @@ dependencies {
 }
 
 group 'com.bruce.intellijplugin'
-version '2.8'
+version '2.8.1'
