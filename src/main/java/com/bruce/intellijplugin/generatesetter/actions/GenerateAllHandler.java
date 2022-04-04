@@ -18,7 +18,8 @@ package com.bruce.intellijplugin.generatesetter.actions;
  * @author bruce ge
  */
 public interface GenerateAllHandler {
-    public boolean shouldAddDefaultValue();
+
+    boolean shouldAddDefaultValue();
 
     boolean isSetter();
 

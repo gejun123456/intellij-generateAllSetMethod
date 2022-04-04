@@ -590,7 +590,6 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
 
     @NotNull
     private Boolean isValidAsMethodWithSetterMethod(@NotNull PsiElement element) {
-        PsiClass psiClass;
         PsiElement parentMethod = PsiTreeUtil.getParentOfType(element,
                 PsiMethod.class);
         if (parentMethod == null) {
@@ -601,7 +600,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         if (method.getReturnType() == null) {
             return false;
         }
-        psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
+        PsiClass psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
         Parameters returnTypeInfo = PsiToolUtils
                 .extractParamInfo(method.getReturnType());
         if (returnTypeInfo.getCollectPackege() != null && handlerMap

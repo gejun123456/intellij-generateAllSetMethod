@@ -114,6 +114,8 @@
 
     <depends optional="true" config-file="plugin-kotlin.xml">org.jetbrains.kotlin</depends>
 
+    <depends optional="true" config-file="plugin-groovy.xml">org.intellij.groovy</depends>
+
     <extensions defaultExtensionNs="com.intellij">
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction</className>
