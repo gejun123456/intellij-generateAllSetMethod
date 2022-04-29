@@ -17,7 +17,11 @@ package com.bruce.intellijplugin.generatesetter.actions;
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GetInfo;
 import com.bruce.intellijplugin.generatesetter.Parameters;
-import com.bruce.intellijplugin.generatesetter.complexreturntype.*;
+import com.bruce.intellijplugin.generatesetter.complexreturntype.ComplexReturnTypeHandler;
+import com.bruce.intellijplugin.generatesetter.complexreturntype.InsertDto;
+import com.bruce.intellijplugin.generatesetter.complexreturntype.ListReturnTypeHandler;
+import com.bruce.intellijplugin.generatesetter.complexreturntype.MapReturnTypeHandler;
+import com.bruce.intellijplugin.generatesetter.complexreturntype.SetReturnTypeHandler;
 import com.bruce.intellijplugin.generatesetter.utils.PsiClassUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiDocumentUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiToolUtils;
@@ -28,7 +32,18 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDeclarationStatement;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.util.IncorrectOperationException;
@@ -36,7 +51,12 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author bruce ge
@@ -404,12 +424,22 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                                             Set<String> newImportList, boolean hasGuava) {
         StringBuilder builder = new StringBuilder();
         builder.append(splitText);
-        for (PsiMethod method : methodList) {
-            generateDefaultForOneMethod(generateName, newImportList, hasGuava,
-                    builder, method);
-            builder.append(splitText);
+
+        if (generateAllHandler.forAccessor()) {
+            builder.append(generateName);
+            for (PsiMethod method : methodList) {
+                builder.append(generateAllHandler.formatLine("." + method.getName() + "()"));
+                builder.append(splitText);
+                builder.append("\t");
+            }
+            builder.append(";");
+            return builder.toString();
         }
 
+        for (PsiMethod method : methodList) {
+            generateDefaultForOneMethod(generateName, newImportList, hasGuava, builder, method);
+            builder.append(splitText);
+        }
         return builder.toString();
     }
 
@@ -560,7 +590,6 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
 
     @NotNull
     private Boolean isValidAsMethodWithSetterMethod(@NotNull PsiElement element) {
-        PsiClass psiClass;
         PsiElement parentMethod = PsiTreeUtil.getParentOfType(element,
                 PsiMethod.class);
         if (parentMethod == null) {
@@ -571,7 +600,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         if (method.getReturnType() == null) {
             return false;
         }
-        psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
+        PsiClass psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
         Parameters returnTypeInfo = PsiToolUtils
                 .extractParamInfo(method.getReturnType());
         if (returnTypeInfo.getCollectPackege() != null && handlerMap
