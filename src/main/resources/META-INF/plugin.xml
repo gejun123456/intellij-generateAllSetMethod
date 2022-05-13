@@ -140,5 +140,9 @@
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateSetterGetterFromFunctionAction</className>
         </intentionAction>
+
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllGetterAction</className>
+        </intentionAction>
     </extensions>
 </idea-plugin>

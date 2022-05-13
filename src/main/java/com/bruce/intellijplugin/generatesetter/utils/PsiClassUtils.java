@@ -20,7 +20,9 @@ import com.intellij.psi.PsiMethod;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Author bruce.ge
@@ -33,6 +35,11 @@ public class PsiClassUtils {
             return false;
         }
         String qualifiedName = psiClass.getQualifiedName();
+        Set<String> okJavaSet = new HashSet<>();
+        okJavaSet.add("java.util.Map.Entry");
+        if (okJavaSet.contains(qualifiedName)) {
+            return true;
+        }
         if (qualifiedName == null || qualifiedName.startsWith("java.")) {
             return false;
         }
