@@ -134,6 +134,10 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateBuilderGetterFromFunctionAction</className>
+        </intentionAction>
+
+        <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.AssertJAssertAllGetterAction</className>
         </intentionAction>
 
