@@ -50,6 +50,7 @@ import com.intellij.util.IncorrectOperationException;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -226,6 +227,25 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         List<PsiMethod> methods = PsiClassUtils.extractSetMethods(psiClass);
         Set<String> importList = Sets.newHashSet();
         String generateName = PsiToolUtils.lowerStart(psiClass.getName());
+        GetInfo info = getGetInfo(parameters);
+        // TODO: 2017/8/2 what if two class has the same name
+        String insertText = splitText + psiClass.getName() + " " + generateName
+                + " = new " + psiClass.getName() + "();";
+        if (info == null) {
+            insertText += generateStringForNoParam(generateName, methods,
+                    splitText, importList, hasGuava);
+        } else {
+            insertText += generateStringForParam(generateName, methods,
+                    splitText, importList, hasGuava, info);
+        }
+        insertText += "return " + generateName + ";";
+        dto.setAddedText(insertText);
+        dto.setImportList(importList);
+        return dto;
+    }
+
+    @Nullable
+    protected GetInfo getGetInfo(PsiParameter[] parameters) {
         GetInfo info = null;
         if (parameters.length > 0) {
             for (PsiParameter parameter : parameters) {
@@ -246,20 +266,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                 }
             }
         }
-        // TODO: 2017/8/2 what if two class has the same name
-        String insertText = splitText + psiClass.getName() + " " + generateName
-                + " = new " + psiClass.getName() + "();";
-        if (info == null) {
-            insertText += generateStringForNoParam(generateName, methods,
-                    splitText, importList, hasGuava);
-        } else {
-            insertText += generateStringForParam(generateName, methods,
-                    splitText, importList, hasGuava, info);
-        }
-        insertText += "return " + generateName + ";";
-        dto.setAddedText(insertText);
-        dto.setImportList(importList);
-        return dto;
+        return info;
     }
 
     private String generateStringForParam(String generateName,
@@ -358,7 +365,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     }
 
     @NotNull
-    private static String extractSplitText(PsiMethod method,
+    protected static String extractSplitText(PsiMethod method,
                                            Document document) {
         int startOffset = method.getTextRange().getStartOffset();
         int lastLine = startOffset - 1;
@@ -565,6 +572,9 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                                @NotNull PsiElement element) {
         boolean setter = generateAllHandler.isSetter();
         if (generateAllHandler.forBuilder()) {
+            if (generateAllHandler.isFromMethod()) {
+                return isExistBuilder(element);
+            }
             PsiClass localVarialbeContainingClass = getLocalVarialbeContainingClass(element);
             if (localVarialbeContainingClass == null) {
                 return false;
@@ -585,6 +595,22 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             return isValidAsMethodWithSetterMethod(element);
         }
 
+        return false;
+    }
+
+    @NotNull
+    private Boolean isExistBuilder(@NotNull PsiElement element) {
+        PsiMethod parentMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+        if (parentMethod != null && parentMethod.getReturnType() != null) {
+            PsiClass psiClass = PsiTypesUtil.getPsiClass(parentMethod.getReturnType());
+            if (psiClass != null) {
+                for (PsiMethod method : psiClass.getMethods()) {
+                    if (method.getName().equals(CommonConstants.BUILDER_METHOD_NAME)&&method.hasModifierProperty(STATIC)) {
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
