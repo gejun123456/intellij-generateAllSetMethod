@@ -23,6 +23,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.8.1</strong>
+        <ul>
+            <li>[NEW]support groovy</li>
+            <li>[IMPROVE]better builder support</li>
+            <li>[NEW]support accessor chain</li>
+        </ul>
     <strong>2.8</strong>
         <ul>
             <li>[FIX]fix exception in 2021.2</li>
