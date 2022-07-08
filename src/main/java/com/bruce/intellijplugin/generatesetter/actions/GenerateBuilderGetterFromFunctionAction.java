@@ -3,6 +3,7 @@ package com.bruce.intellijplugin.generatesetter.actions;
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
 import com.bruce.intellijplugin.generatesetter.GetInfo;
+import com.bruce.intellijplugin.generatesetter.utils.PsiToolUtils;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -11,6 +12,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.util.IncorrectOperationException;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class GenerateBuilderGetterFromFunctionAction extends GenerateAllSetterBase {
@@ -47,7 +49,7 @@ public class GenerateBuilderGetterFromFunctionAction extends GenerateAllSetterBa
             }
 
             PsiClass psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());
-            if (psiClass == null) {
+            if (psiClass == null || psiClass.getName() == null) {
                 return;
             }
 
@@ -55,9 +57,12 @@ public class GenerateBuilderGetterFromFunctionAction extends GenerateAllSetterBa
             GetInfo info = getGetInfo(method.getParameterList().getParameters());
 
             StringBuilder builder = new StringBuilder(splitText);
-            builder.append("return ").append(psiClass.getName()).append(".builder()");
+            String resultName = PsiToolUtils.lowerStart(psiClass.getName());
+            builder.append(psiClass.getName()).append(" ").append(resultName)
+                    .append(" = ").append(psiClass.getName()).append(".builder()");
             builder.append(generateBuilderChain(psiClass.getFields(), splitText, info));
-            builder.append(".build();");
+            builder.append(splitText).append("\t").append("\t").append(".build();");
+            builder.append(splitText).append("return ").append(resultName).append(";");
 
             WriteCommandAction.runWriteCommandAction(project, () -> {
                 document.insertString(method.getBody().getTextOffset() + 1, builder.toString());
@@ -68,17 +73,16 @@ public class GenerateBuilderGetterFromFunctionAction extends GenerateAllSetterBa
 
     private String generateBuilderChain(PsiField[] psiFields, String splitText, GetInfo info) {
         StringBuilder builder = new StringBuilder();
-        builder.append(splitText).append("\t").append("\t");
         for (PsiField psiField : psiFields) {
+            builder.append(splitText).append("\t").append("\t");
             String fieldName = psiField.getName();
-            PsiMethod s = info.getNameToMethodMap().get(fieldName);
+            PsiMethod s = info.getNameToMethodMap().get(StringUtils.lowerCase(fieldName));
             if (s != null) {
                 String getMethodText = info.getParamName() + "." + s.getName() + "()";
                 builder.append(".").append(fieldName).append("(").append(getMethodText).append(")");
             } else {
                 builder.append(".").append(fieldName).append("()");
             }
-            builder.append(splitText).append("\t").append("\t");
         }
         return builder.toString();
     }
