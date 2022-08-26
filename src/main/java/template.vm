@@ -1,0 +1,20 @@
+#* @implicitly included *#
+#* @vtlvariable name="theClass" type="com.intellij.psi.PsiClass" *#
+#* @vtlvariable name="variableName" type="com.intellij.psi.PsiClass" *#
+
+#foreach($method in $theClass.methods)
+    #if($method.name.startsWith("set"))
+        #set($defaultValue=0)
+        #if($method.hasParameters())
+            #set($parameterType=${method.parameterList.parameters[0].getType().getPresentableText()})
+            #if($parameterType.equals("String"))
+                #set($defaultValue="""hello""")
+            #elseif($parameterType.equals("Integer"))
+                #set($defaultValue="0")
+            #elseif($parameterType.equals("Date"))
+                #set($defaultValue="new Date()")
+            #end
+            $variableName.${method.name}(${returnTypeText});
+        #end
+    #end
+#end

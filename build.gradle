@@ -58,6 +58,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.12.2'
 
+    compile group: 'uk.com.robust-it', name: 'cloning', version: '1.9.3'
+
 }
 
 group 'com.bruce.intellijplugin'
