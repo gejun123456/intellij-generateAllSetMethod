@@ -15,6 +15,7 @@
 package com.bruce.intellijplugin.generatesetter.template;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.EditorSettings;
@@ -33,9 +34,9 @@ import com.intellij.refactoring.ui.ClassNameReferenceEditor;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.components.JBList;
+import com.intellij.ui.components.labels.LinkLabel;
+import com.intellij.ui.components.labels.LinkListener;
 import org.apache.commons.lang.StringUtils;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -44,8 +45,6 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.List;
 
 /**
@@ -59,6 +58,7 @@ public class GenerateAllSetterSettingForm {
     private JPanel toolbarPanel;
     private ClassNameReferenceEditor classNameReferenceEditor1;
     private JButton debugButton;
+    private LinkLabel exampleField;
     private GenerateSetterState myGenerateSetterState;
     private int currentSelectedIndex = -1;
 
@@ -83,7 +83,10 @@ public class GenerateAllSetterSettingForm {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String text = myEditorTextField.getText();
-                String result = generate(text);
+                String text1 = classNameReferenceEditor1.getText();
+                Project project = ProjectUtil.guessCurrentProject(null);
+                PsiClass aClass = JavaPsiFacade.getInstance(project).findClass(text1, GlobalSearchScope.allScope(project));
+                String result = VelocityUtils.generate(text,aClass, "demo");
                 Messages.showMessageDialog(result, "Generated info", null);
             }
         });
@@ -116,28 +119,13 @@ public class GenerateAllSetterSettingForm {
                 }
             }
         });
-    }
 
-    private String generate(String text) {
-        VelocityEngine velocityEngine = new VelocityEngine();
-        VelocityContext velocityContext = new VelocityContext();
-        String text1 = classNameReferenceEditor1.getText();
-        Project project = ProjectUtil.guessCurrentProject(null);
-        PsiClass aClass = JavaPsiFacade.getInstance(project).findClass(text1, GlobalSearchScope.allScope(project));
-        velocityContext.put("theClass", aClass);
-        velocityContext.put("variableName", "demo");
-        StringWriter stringWriter = new StringWriter();
-        try {
-            velocityEngine.evaluate(velocityContext, stringWriter, "Velocity Code Generate", text);
-        } catch (Exception e) {
-            StringBuilder builder = new StringBuilder("catch exception when generate\n");
-            StringWriter writer = new StringWriter();
-            e.printStackTrace(new PrintWriter(writer));
-            builder.append(writer.toString());
-            return builder.toString().replace("\r", "");
-        }
-        String code = stringWriter.toString();
-        return code.toString();
+        exampleField.setListener(new LinkListener() {
+            @Override
+            public void linkSelected(LinkLabel aSource, Object aLinkData) {
+                BrowserUtil.browse("https://github.com/gejun123456/intellij-generateAllSetMethod");
+            }
+        }, null);
     }
 
     public JPanel getThePanel() {
@@ -170,7 +158,7 @@ public class GenerateAllSetterSettingForm {
             public void actionPerformed(@NotNull AnActionEvent e) {
                 List<Template> templateList = myGenerateSetterState.getTemplateList();
                 int selectedIndex = myJBList.getSelectedIndex();
-                if(selectedIndex!=-1){
+                if (selectedIndex != -1) {
                     templateList.remove(selectedIndex);
                 }
                 ListModel model = myJBList.getModel();
@@ -182,7 +170,7 @@ public class GenerateAllSetterSettingForm {
 
             @Override
             public void update(@NotNull AnActionEvent e) {
-                e.getPresentation().setEnabled(myJBList.getSelectedIndex()!=-1);
+                e.getPresentation().setEnabled(myJBList.getSelectedIndex() != -1);
             }
         };
     }

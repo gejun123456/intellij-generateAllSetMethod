@@ -158,5 +158,8 @@
         <applicationService serviceImplementation="com.bruce.intellijplugin.generatesetter.template.GenerateSetterService"/>
 
         <applicationConfigurable instance="com.bruce.intellijplugin.generatesetter.template.MySettings"/>
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateByTemplateAction</className>
+        </intentionAction>
     </extensions>
 </idea-plugin>

@@ -471,7 +471,7 @@ public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
         return PsiTypesUtil.getPsiClass(psiParent.getType());
     }
 
-    private PsiClass getLocalVariableContainingClass(@NotNull PsiElement element) {
+    public static PsiClass getLocalVariableContainingClass(@NotNull PsiElement element) {
         PsiLocalVariable psiLocal = PsiTreeUtil.getParentOfType(element, PsiLocalVariable.class);
         if (psiLocal == null) {
             return null;
