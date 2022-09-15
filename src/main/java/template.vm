@@ -49,6 +49,8 @@
                 #set($defaultValue="""""")
             #elseif($parameterType.equals("java.lang.Byte"))
                 #set($defaultValue="(byte)0")
+            #else
+                #set($defaultValue="null")
             #end
             $variableName.${method.name}(${defaultValue});
         #end
