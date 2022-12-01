@@ -383,7 +383,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         }
         String methodStartToLastLineText = document
                 .getText(new TextRange(lastLine, startOffset));
-        String splitText = null;
+        String splitText = "";
         if (isTable) {
             splitText += methodStartToLastLineText + "\t";
         } else {

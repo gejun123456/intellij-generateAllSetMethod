@@ -56,7 +56,7 @@ public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
         }
         String methodStartToLastLineText = document
                 .getText(new TextRange(lastLine, startOffset));
-        String splitText = null;
+        String splitText = "";
         if (isTable) {
             splitText += methodStartToLastLineText + "\t";
         } else {
