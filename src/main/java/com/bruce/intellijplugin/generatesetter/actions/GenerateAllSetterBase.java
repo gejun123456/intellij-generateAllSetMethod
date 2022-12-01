@@ -189,6 +189,9 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                 .getInstance(project);
         Document document = psiDocumentManager
                 .getDocument(element.getContainingFile());
+        if(document==null){
+            return;
+        }
         String splitText = extractSplitText(method, document);
         Parameters returnTypeInfo = PsiToolUtils
                 .extractParamInfo(method.getReturnType());
@@ -410,6 +413,9 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                 .getInstance(project);
         PsiFile containingFile = element.getContainingFile();
         Document document = psiDocumentManager.getDocument(containingFile);
+        if(document==null){
+            return;
+        }
         String splitText = PsiToolUtils.calculateSplitText(document, parent1.getTextOffset());
 
         Set<String> newImportList = new HashSet<>();

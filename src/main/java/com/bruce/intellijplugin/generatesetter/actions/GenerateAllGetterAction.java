@@ -91,6 +91,9 @@ public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
         PsiFile containingFile = element.getContainingFile();
         Document document = psiDocumentManager.getDocument(containingFile);
+        if(document==null){
+            return;
+        }
         if (psiLocal != null) {
             PsiElement parent = psiLocal.getParent();
             String splitText = calculateSplitText(document, parent.getTextOffset(), "");

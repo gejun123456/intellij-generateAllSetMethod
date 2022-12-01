@@ -10,7 +10,8 @@
       <p> generate call to class all setter method by alt+enter on the variable class</p>
       <p> generate a converter two object when they have same field</p>
       <p> generate default value when returnType is List Set Map </p>
-      <p> generate call to assertThat on all getter method
+      <p> generate call to assertThat on all getter method</p>
+        <p> generate call to getter method</p>
       <p> like a user class has setName, setPassword methods</p>
       <p> <b>User</b> user = new User();</p>
       <p> then alt+enter on User</p>
@@ -23,6 +24,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.8.2</strong>
+        <ul>
+            <li>[FIX]fix document null exception</li>
+        </ul>
         <strong>2.8.1</strong>
         <ul>
             <li>[NEW]support groovy</li>
@@ -158,8 +163,8 @@
         <applicationService serviceImplementation="com.bruce.intellijplugin.generatesetter.template.GenerateSetterService"/>
 
         <applicationConfigurable instance="com.bruce.intellijplugin.generatesetter.template.MySettings"/>
-        <intentionAction>
-            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateByTemplateAction</className>
-        </intentionAction>
+<!--        <intentionAction>-->
+<!--            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateByTemplateAction</className>-->
+<!--        </intentionAction>-->
     </extensions>
 </idea-plugin>
