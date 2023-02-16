@@ -1,4 +1,4 @@
-<idea-plugin version="2">
+<idea-plugin>
     <id>com.bruce.intellijplugin.generatesetter</id>
     <name>GenerateAllSetter</name>
     <vendor email="gejun123456@gmail.com" url="https://github.com/gejun123456/intellij-generateAllSetMethod">bruceGe</vendor>
@@ -24,6 +24,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.8.3</strong>
+        <ul>
+            <li>[FIX]Must not start write action from within read action in the other thread - deadlock is coming</li>
+        </ul>
         <strong>2.8.2</strong>
         <ul>
             <li>[FIX]fix document null exception</li>

@@ -63,6 +63,10 @@ public class GenerateWithBuilderAction extends GenerateAllSetterBase {
                 // insert into the element.
                 Document document = PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
 
+                if(document==null){
+                    return;
+                }
+
                 WriteCommandAction.runWriteCommandAction(project, new Runnable() {
                     @Override
                     public void run() {
