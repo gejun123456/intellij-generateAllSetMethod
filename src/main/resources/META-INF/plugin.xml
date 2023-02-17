@@ -13,6 +13,7 @@
       <p> generate call to assertThat on all getter method</p>
         <p> generate call to getter method</p>
       <p> like a user class has setName, setPassword methods</p>
+      <p> generate converter between two class like aa.setHello(bb.getHello()) on method</p>
       <p> <b>User</b> user = new User();</p>
       <p> then alt+enter on User</p>
       <p> will generate following</p>
