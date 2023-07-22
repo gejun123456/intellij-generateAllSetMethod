@@ -74,6 +74,13 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         this.generateAllHandler = generateAllHandler;
     }
 
+    private static final Set<String> javaSimpleTypes = new HashSet<>(Arrays.asList(
+            "char",
+            "boolean",
+            "byte", "short", "int", "long",
+            "float", "double"
+    ));
+
     private static Map<String, String> typeGeneratedMap = new HashMap<String, String>() {
         {
             put("boolean", "false");
@@ -531,11 +538,17 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                             Arrays.stream(allFields).findFirst().ifPresent(field -> builder.append(psiClassOfParameter.getName()).append(".").append(field.getName()));
                         }
                         else {
-                            builder.append("new "
-                                    + paramInfo.getParams().get(0).getRealName()
-                                    + "()");
+                            String realName = paramInfo.getParams().get(0).getRealName();
+
+                            if (realName.endsWith("[]")) {
+                                builder.append("new " + realName.replace("[]", "[0]"));
+                            } else {
+                                builder.append("new " + realName + "()");
+                            }
                         }
-                        newImportList.add(realPackage);
+                        if (!javaSimpleTypes.contains(realPackage.replace("[]", ""))) {
+                            newImportList.add(realPackage);
+                        }
                     }
                 }
 
