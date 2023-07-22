@@ -540,13 +540,13 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                         else {
                             String realName = paramInfo.getParams().get(0).getRealName();
 
-                            if (realName.endsWith("[]")) {
-                                builder.append("new " + realName.replace("[]", "[0]"));
+                            if (paramInfo.isArray()) {
+                                builder.append("new " + realName + "[0]");
                             } else {
                                 builder.append("new " + realName + "()");
                             }
                         }
-                        if (!javaSimpleTypes.contains(realPackage.replace("[]", ""))) {
+                        if (!javaSimpleTypes.contains(realPackage)) {
                             newImportList.add(realPackage);
                         }
                     }
@@ -563,15 +563,20 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     private static void appendCollectNotEmpty(StringBuilder builder,
                                               Parameters paramInfo, String defaultImpl,
                                               Set<String> newImportList) {
-        builder.append("new " + defaultImpl + "<");
-        for (int i = 0; i < paramInfo.getParams().size(); i++) {
-            builder.append(paramInfo.getParams().get(i).getRealName());
-            newImportList.add(paramInfo.getParams().get(i).getRealPackage());
-            if (i != paramInfo.getParams().size() - 1) {
-                builder.append(",");
+        builder.append("new ").append(defaultImpl);
+        if (paramInfo.isArray()) {
+            builder.append("[0]");
+        } else {
+            builder.append("<");
+            for (int i = 0; i < paramInfo.getParams().size(); i++) {
+                builder.append(paramInfo.getParams().get(i).getRealName());
+                newImportList.add(paramInfo.getParams().get(i).getRealPackage());
+                if (i != paramInfo.getParams().size() - 1) {
+                    builder.append(",");
+                }
             }
+            builder.append(">()");
         }
-        builder.append(">()");
     }
 
     private String findNextNotNull(PsiTypeElement psiType, String defaultName) {

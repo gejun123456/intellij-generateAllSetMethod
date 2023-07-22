@@ -31,6 +31,8 @@ public class Parameters {
 
     private PsiClass returnType;
 
+    private boolean isArray;
+
 
     public PsiClass getReturnType() {
         return returnType;
@@ -62,5 +64,13 @@ public class Parameters {
 
     public void setParams(List<RealParam> params) {
         this.params = params;
+    }
+
+    public boolean isArray() {
+        return isArray;
+    }
+
+    public void setIsArray(boolean isArray) {
+        this.isArray = isArray;
     }
 }
