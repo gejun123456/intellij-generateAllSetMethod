@@ -32,6 +32,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDeclarationStatement;
 import com.intellij.psi.PsiDocumentManager;
@@ -541,7 +542,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                             String realName = paramInfo.getParams().get(0).getRealName();
 
                             if (paramInfo.isArray()) {
-                                builder.append("new " + realName + "[0]");
+                                builder.append("new " + realName + StringUtil.repeat("[0]", paramInfo.getArrayDimensions()));
                             } else {
                                 builder.append("new " + realName + "()");
                             }
@@ -565,7 +566,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                                               Set<String> newImportList) {
         builder.append("new ").append(defaultImpl);
         if (paramInfo.isArray()) {
-            builder.append("[0]");
+            builder.append(StringUtil.repeat("[0]", paramInfo.getArrayDimensions()));
         } else {
             builder.append("<");
             for (int i = 0; i < paramInfo.getParams().size(); i++) {

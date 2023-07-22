@@ -55,9 +55,10 @@ public class PsiToolUtils {
     public static Parameters extractParamInfo(PsiType psiType) {
         String typeFullName = psiType.getCanonicalText();
         Parameters info = new Parameters();
-        if (typeFullName.endsWith("[]")) {
-            typeFullName = typeFullName.substring(0, typeFullName.length() - 2);
+        if (psiType.getArrayDimensions() > 0) {
+            typeFullName = typeFullName.substring(0, typeFullName.indexOf('['));
             info.setIsArray(true);
+            info.setArrayDimensions(psiType.getArrayDimensions());
         }
         info.setReturnType(PsiTypesUtil.getPsiClass(psiType));
         int u = typeFullName.indexOf("<");
