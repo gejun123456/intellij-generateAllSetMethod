@@ -540,11 +540,14 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                         }
                         else {
                             String realName = paramInfo.getParams().get(0).getRealName();
+                            builder.append("new " + realName);
 
                             if (paramInfo.isArray()) {
-                                builder.append("new " + realName + StringUtil.repeat("[0]", paramInfo.getArrayDimensions()));
+                                for (int i = 0; i < paramInfo.getArrayDimensions(); i++) {
+                                    builder.append("[0]");
+                                }
                             } else {
-                                builder.append("new " + realName + "()");
+                                builder.append("()");
                             }
                         }
                         if (!javaSimpleTypes.contains(realPackage)) {
@@ -566,7 +569,9 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                                               Set<String> newImportList) {
         builder.append("new ").append(defaultImpl);
         if (paramInfo.isArray()) {
-            builder.append(StringUtil.repeat("[0]", paramInfo.getArrayDimensions()));
+            for (int i = 0; i < paramInfo.getArrayDimensions(); i++) {
+                builder.append("[0]");
+            }
         } else {
             builder.append("<");
             for (int i = 0; i < paramInfo.getParams().size(); i++) {
