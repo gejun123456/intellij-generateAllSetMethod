@@ -32,6 +32,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDeclarationStatement;
 import com.intellij.psi.PsiDocumentManager;
@@ -73,6 +74,13 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     public GenerateAllSetterBase(GenerateAllHandler generateAllHandler) {
         this.generateAllHandler = generateAllHandler;
     }
+
+    private static final Set<String> javaSimpleTypes = new HashSet<>(Arrays.asList(
+            "char",
+            "boolean",
+            "byte", "short", "int", "long",
+            "float", "double"
+    ));
 
     private static Map<String, String> typeGeneratedMap = new HashMap<String, String>() {
         {
@@ -531,11 +539,20 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                             Arrays.stream(allFields).findFirst().ifPresent(field -> builder.append(psiClassOfParameter.getName()).append(".").append(field.getName()));
                         }
                         else {
-                            builder.append("new "
-                                    + paramInfo.getParams().get(0).getRealName()
-                                    + "()");
+                            String realName = paramInfo.getParams().get(0).getRealName();
+                            builder.append("new " + realName);
+
+                            if (paramInfo.isArray()) {
+                                for (int i = 0; i < paramInfo.getArrayDimensions(); i++) {
+                                    builder.append("[0]");
+                                }
+                            } else {
+                                builder.append("()");
+                            }
                         }
-                        newImportList.add(realPackage);
+                        if (!javaSimpleTypes.contains(realPackage)) {
+                            newImportList.add(realPackage);
+                        }
                     }
                 }
 
@@ -550,15 +567,22 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     private static void appendCollectNotEmpty(StringBuilder builder,
                                               Parameters paramInfo, String defaultImpl,
                                               Set<String> newImportList) {
-        builder.append("new " + defaultImpl + "<");
-        for (int i = 0; i < paramInfo.getParams().size(); i++) {
-            builder.append(paramInfo.getParams().get(i).getRealName());
-            newImportList.add(paramInfo.getParams().get(i).getRealPackage());
-            if (i != paramInfo.getParams().size() - 1) {
-                builder.append(",");
+        builder.append("new ").append(defaultImpl);
+        if (paramInfo.isArray()) {
+            for (int i = 0; i < paramInfo.getArrayDimensions(); i++) {
+                builder.append("[0]");
             }
+        } else {
+            builder.append("<");
+            for (int i = 0; i < paramInfo.getParams().size(); i++) {
+                builder.append(paramInfo.getParams().get(i).getRealName());
+                newImportList.add(paramInfo.getParams().get(i).getRealPackage());
+                if (i != paramInfo.getParams().size() - 1) {
+                    builder.append(",");
+                }
+            }
+            builder.append(">()");
         }
-        builder.append(">()");
     }
 
     private String findNextNotNull(PsiTypeElement psiType, String defaultName) {
