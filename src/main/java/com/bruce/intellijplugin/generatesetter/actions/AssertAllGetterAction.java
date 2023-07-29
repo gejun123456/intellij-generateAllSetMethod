@@ -47,7 +47,7 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                 switch (currentFileTestEngine) {
                     case JUNIT4:
                     case JUNIT5:
-                        return "assertEquals( , " + line.substring(0, line.length() - 1) + ");";
+                        return "assertEquals(, " + line.substring(0, line.length() - 1) + ");";
                     case TESTNG:
                         return "assertEquals(" + line.substring(0, line.length() - 1) + ", );";
                     case ASSERTJ:
