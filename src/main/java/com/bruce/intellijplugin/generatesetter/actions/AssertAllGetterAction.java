@@ -30,12 +30,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author bruce ge
  */
-public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
+public class AssertAllGetterAction extends GenerateAllSetterBase {
     enum TestEngine {ASSERT, JUNIT4, JUNIT5, TESTNG, ASSERTJ}
 
     private TestEngine currentFileTestEngine = TestEngine.ASSERT;
 
-    public AssertJAssertAllGetterAction() {
+    public AssertAllGetterAction() {
         setGenerateAllHandler(new GenerateAllHandlerAdapter() {
             @Override
             public boolean isSetter() {
@@ -71,11 +71,11 @@ public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
         PsiFile containingFile = element.getContainingFile();
-        if(containingFile==null){
+        if (containingFile == null) {
             return false;
         }
         VirtualFile virtualFile = containingFile.getVirtualFile();
-        if(virtualFile==null){
+        if (virtualFile == null) {
             return false;
         }
 

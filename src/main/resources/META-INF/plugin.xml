@@ -155,7 +155,7 @@
         </intentionAction>
 
         <intentionAction>
-            <className>com.bruce.intellijplugin.generatesetter.actions.AssertJAssertAllGetterAction</className>
+            <className>com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction</className>
         </intentionAction>
 
         <intentionAction>
