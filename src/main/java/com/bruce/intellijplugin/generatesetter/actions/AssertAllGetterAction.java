@@ -53,7 +53,7 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                     case ASSERTJ:
                         return "assertThat(" + line.substring(0, line.length() - 1) + ").isEqualTo();";
                     case ASSERT:
-                        return "assert " + line.substring(0, line.length() - 1) + " == ;";
+                        return "assert Objects.equals(, " + line.substring(0, line.length() - 1) + ");";
                     default:
                         throw new Error("Unknown case: " + currentFileTestEngine);
                 }
