@@ -30,4 +30,6 @@ public interface GenerateAllHandler {
     boolean forBuilder();
 
     boolean forAccessor();
+
+    boolean forAssertWithDefaultValues();
 }

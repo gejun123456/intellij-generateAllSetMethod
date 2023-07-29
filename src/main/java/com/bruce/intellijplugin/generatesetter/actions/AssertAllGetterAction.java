@@ -36,31 +36,8 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
     private TestEngine currentFileTestEngine = TestEngine.ASSERT;
 
     public AssertAllGetterAction() {
-        setGenerateAllHandler(new GenerateAllHandlerAdapter() {
-            @Override
-            public boolean isSetter() {
-                return false;
-            }
-
-            @Override
-            public String formatLine(String line) {
-                switch (currentFileTestEngine) {
-                    case JUNIT4:
-                    case JUNIT5:
-                        return "assertEquals(, " + line.substring(0, line.length() - 1) + ");";
-                    case TESTNG:
-                        return "assertEquals(" + line.substring(0, line.length() - 1) + ", );";
-                    case ASSERTJ:
-                        return "assertThat(" + line.substring(0, line.length() - 1) + ").isEqualTo();";
-                    case ASSERT:
-                        return "assert Objects.equals(, " + line.substring(0, line.length() - 1) + ");";
-                    default:
-                        throw new Error("Unknown case: " + currentFileTestEngine);
-                }
-            }
-        });
+        setGenerateAllHandler(new GenerateAllAssertsHandlerAdapter(true));
     }
-
 
     @NotNull
     @Override
@@ -120,5 +97,55 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
         }
 
         return TestEngine.ASSERT;
+    }
+
+    class GenerateAllAssertsHandlerAdapter extends GenerateAllHandlerAdapter {
+        private final boolean generateWithDefaultValues;
+
+        public GenerateAllAssertsHandlerAdapter(boolean generateWithDefaultValues) {
+            this.generateWithDefaultValues = generateWithDefaultValues;
+        }
+
+        @Override
+        public boolean isSetter() {
+            return false;
+        }
+
+        @Override
+        public boolean shouldAddDefaultValue() {
+            return generateWithDefaultValues;
+        }
+
+        @Override
+        public boolean forAssertWithDefaultValues() {
+            return generateWithDefaultValues;
+        }
+
+        @Override
+        public String formatLine(String line) {
+            String getter, value;
+            if (forAssertWithDefaultValues()) {
+                int index = line.indexOf("(");
+                getter = line.substring(0, index + 1) + ")";
+                value = line.substring(index + 1, line.length() - 2);
+            } else {
+                getter = line.substring(0, line.length() - 1);
+                value = "";
+            }
+
+            switch (currentFileTestEngine) {
+                case JUNIT4:
+                case JUNIT5:
+                    return "assertEquals(" + value + ", " + getter + ");";
+                case TESTNG:
+                    return "assertEquals(" + getter + ", " + value + ");";
+                case ASSERTJ:
+                    return "assertThat(" + getter + ").isEqualTo(" + value + ");";
+                case ASSERT:
+                    return "assert Objects.equals(" + value + ", " + getter + ");";
+                default:
+                    throw new Error("Unknown case: " + currentFileTestEngine);
+            }
+        }
     }
 }

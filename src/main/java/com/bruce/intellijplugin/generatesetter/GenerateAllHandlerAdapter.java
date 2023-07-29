@@ -49,4 +49,9 @@ public class GenerateAllHandlerAdapter implements GenerateAllHandler {
     public boolean forAccessor() {
         return false;
     }
+
+    @Override
+    public boolean forAssertWithDefaultValues() {
+        return false;
+    }
 }
