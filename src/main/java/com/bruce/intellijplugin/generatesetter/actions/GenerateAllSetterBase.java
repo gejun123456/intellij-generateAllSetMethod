@@ -69,9 +69,16 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     private static final String SET_SETTER_PREFIX = "set";
     private static final String WITH_SETTER_PREFIX = "with";
     public static final String STATIC = "static";
-    private final GenerateAllHandler generateAllHandler;
+    private GenerateAllHandler generateAllHandler;
+
+    public GenerateAllSetterBase() {
+    }
 
     public GenerateAllSetterBase(GenerateAllHandler generateAllHandler) {
+        this.generateAllHandler = generateAllHandler;
+    }
+
+    public void setGenerateAllHandler(GenerateAllHandler generateAllHandler) {
         this.generateAllHandler = generateAllHandler;
     }
 

@@ -22,14 +22,21 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiImportList;
+import com.intellij.psi.PsiImportStatement;
+import com.intellij.psi.PsiJavaFile;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author bruce ge
  */
 public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
+    enum TestEngine {ASSERT, JUNIT4, JUNIT5, TESTNG, ASSERTJ}
+
+    private TestEngine currentFileTestEngine = TestEngine.ASSERT;
+
     public AssertJAssertAllGetterAction() {
-        super(new GenerateAllHandlerAdapter() {
+        setGenerateAllHandler(new GenerateAllHandlerAdapter() {
             @Override
             public boolean isSetter() {
                 return false;
@@ -37,7 +44,19 @@ public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
 
             @Override
             public String formatLine(String line) {
-                return "assertThat(" + line.substring(0, line.length() - 1) + ").isEqualTo();";
+                switch (currentFileTestEngine) {
+                    case JUNIT4:
+                    case JUNIT5:
+                        return "assertEquals( , " + line.substring(0, line.length() - 1) + ");";
+                    case TESTNG:
+                        return "assertEquals(" + line.substring(0, line.length() - 1) + ", );";
+                    case ASSERTJ:
+                        return "assertThat(" + line.substring(0, line.length() - 1) + ").isEqualTo();";
+                    case ASSERT:
+                        return "assert " + line.substring(0, line.length() - 1) + " == ;";
+                    default:
+                        throw new Error("Unknown case: " + currentFileTestEngine);
+                }
             }
         });
     }
@@ -59,10 +78,50 @@ public class AssertJAssertAllGetterAction extends GenerateAllSetterBase {
         if(virtualFile==null){
             return false;
         }
-        boolean inTestSourceContent = ProjectRootManager.getInstance(element.getProject()).getFileIndex().isInTestSourceContent(virtualFile);
+
+        ProjectRootManager instance = ProjectRootManager.getInstance(element.getProject());
+        boolean inTestSourceContent = instance.getFileIndex().isInTestSourceContent(virtualFile);
+
         if (inTestSourceContent) {
+            currentFileTestEngine = detectCurrentTestEngine(containingFile);
             return super.isAvailable(project, editor, element);
         }
         return false;
+    }
+
+    private static TestEngine detectCurrentTestEngine(PsiFile containingFile) {
+        if (containingFile instanceof PsiJavaFile) {
+            PsiJavaFile javaFile = (PsiJavaFile) containingFile;
+            PsiImportList importList = javaFile.getImportList();
+
+            if (importList != null) {
+                PsiImportStatement[] importStatements = importList.getImportStatements();
+
+                for (PsiImportStatement importStatement : importStatements) {
+                    String qualifiedName = importStatement.getQualifiedName();
+                    if (qualifiedName == null) {
+                        continue;
+                    }
+
+                    if (qualifiedName.contains("org.junit.jupiter.api")) {
+                        return TestEngine.JUNIT5;
+                    }
+
+                    if (qualifiedName.contains("org.junit")) {
+                        return TestEngine.JUNIT4;
+                    }
+
+                    if (qualifiedName.contains("org.assertj")) {
+                        return TestEngine.ASSERTJ;
+                    }
+                    if (qualifiedName.contains("org.testng")) {
+                        return TestEngine.TESTNG;
+                    }
+
+                }
+            }
+        }
+
+        return TestEngine.ASSERT;
     }
 }
