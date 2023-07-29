@@ -103,21 +103,18 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                         continue;
                     }
 
-                    if (qualifiedName.contains("org.junit.jupiter.api")) {
+                    if (qualifiedName.startsWith("org.junit.jupiter.api.")) {
                         return TestEngine.JUNIT5;
                     }
-
-                    if (qualifiedName.contains("org.junit")) {
+                    if (qualifiedName.startsWith("org.junit.")) {
                         return TestEngine.JUNIT4;
                     }
-
-                    if (qualifiedName.contains("org.assertj")) {
+                    if (qualifiedName.startsWith("org.assertj.")) {
                         return TestEngine.ASSERTJ;
                     }
-                    if (qualifiedName.contains("org.testng")) {
+                    if (qualifiedName.startsWith("org.testng.")) {
                         return TestEngine.TESTNG;
                     }
-
                 }
             }
         }
