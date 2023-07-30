@@ -28,6 +28,7 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.Splitter;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.ui.ClassNameReferenceEditor;
@@ -59,6 +60,9 @@ public class GenerateAllSetterSettingForm {
     private ClassNameReferenceEditor classNameReferenceEditor1;
     private JButton debugButton;
     private LinkLabel exampleField;
+    private JPanel splitterPanel;
+    private JCheckBox useOnlyJDKClassesCheckBox;
+    private JPanel generateByTemplateSettings;
     private GenerateSetterState myGenerateSetterState;
     private int currentSelectedIndex = -1;
 
@@ -78,6 +82,15 @@ public class GenerateAllSetterSettingForm {
         // 向下移动
         ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("Item Toolbar", actionGroup, true);
         this.toolbarPanel.add(actionToolbar.getComponent(), BorderLayout.CENTER);
+
+        // surround panels with splitter.
+        JComponent leftPanel = (JComponent) splitterPanel.getComponent(0);
+        JComponent rightPanel = (JComponent) splitterPanel.getComponent(1);
+        splitterPanel.removeAll();
+        Splitter splitter = new Splitter(false, 0.3f);
+        splitter.setFirstComponent(leftPanel);
+        splitter.setSecondComponent(rightPanel);
+        splitterPanel.add(splitter, BorderLayout.CENTER);
 
         debugButton.addActionListener(new ActionListener() {
             @Override
@@ -126,6 +139,33 @@ public class GenerateAllSetterSettingForm {
                 BrowserUtil.browse("https://github.com/gejun123456/intellij-generateAllSetMethod");
             }
         }, null);
+
+        enableGenerateByTemplateCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateGenerateByTemplateCheckBoxState();
+            }
+        });
+    }
+
+    private void updateGenerateByTemplateCheckBoxState() {
+        boolean selected = enableGenerateByTemplateCheckBox.isSelected();
+        setPanelEnabled(generateByTemplateSettings, selected);
+        setPanelEnabled(splitterPanel, selected);
+    }
+
+    // https://stackoverflow.com/questions/19324918/how-to-disable-all-components-in-a-jpanel
+    public static void setPanelEnabled(JPanel panel, Boolean isEnabled) {
+        panel.setEnabled(isEnabled);
+
+        Component[] components = panel.getComponents();
+
+        for (Component component : components) {
+            if (component instanceof JPanel) {
+                setPanelEnabled((JPanel) component, isEnabled);
+            }
+            component.setEnabled(isEnabled);
+        }
     }
 
     public JPanel getThePanel() {
@@ -177,8 +217,14 @@ public class GenerateAllSetterSettingForm {
 
     public void importFromSettings(GenerateSetterState state) {
         myGenerateSetterState = state;
+
+        Boolean useJdkClassesOnly = state.getUseJdkClassesOnly();
+        useOnlyJDKClassesCheckBox.setSelected(useJdkClassesOnly);
+
         Boolean generateByTemplate = state.getGenerateByTemplate();
         enableGenerateByTemplateCheckBox.setSelected(generateByTemplate);
+        updateGenerateByTemplateCheckBoxState();
+
         currentSelectedIndex = -1;
         DefaultListModel model = new DefaultListModel();
         List<Template> templateList = state.getTemplateList();
@@ -205,6 +251,7 @@ public class GenerateAllSetterSettingForm {
 
     public GenerateSetterState getTheState() {
         myGenerateSetterState.setGenerateByTemplate(enableGenerateByTemplateCheckBox.isSelected());
+        myGenerateSetterState.setUseJdkClassesOnly(useOnlyJDKClassesCheckBox.isSelected());
         return myGenerateSetterState;
     }
 

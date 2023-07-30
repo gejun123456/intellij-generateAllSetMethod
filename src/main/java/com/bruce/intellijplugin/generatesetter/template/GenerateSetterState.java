@@ -25,9 +25,18 @@ import java.util.List;
  * @author bruce ge 2022/8/25
  */
 public class GenerateSetterState {
+    private Boolean useJdkClassesOnly = false;
     private Boolean generateByTemplate = false;
 
     private List<Template> templateList = Lists.newArrayList();
+
+    public Boolean getUseJdkClassesOnly() {
+        return useJdkClassesOnly;
+    }
+
+    public void setUseJdkClassesOnly(Boolean useJdkClassesOnly) {
+        this.useJdkClassesOnly = useJdkClassesOnly;
+    }
 
     public Boolean getGenerateByTemplate() {
         return generateByTemplate;
@@ -53,11 +62,19 @@ public class GenerateSetterState {
 
         GenerateSetterState that = (GenerateSetterState) o;
 
-        return new EqualsBuilder().append(generateByTemplate, that.generateByTemplate).append(templateList, that.templateList).isEquals();
+        return new EqualsBuilder()
+                .append(useJdkClassesOnly, that.useJdkClassesOnly)
+                .append(generateByTemplate, that.generateByTemplate)
+                .append(templateList, that.templateList)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(generateByTemplate).append(templateList).toHashCode();
+        return new HashCodeBuilder(17, 37)
+                .append(useJdkClassesOnly)
+                .append(generateByTemplate)
+                .append(templateList)
+                .toHashCode();
     }
 }
