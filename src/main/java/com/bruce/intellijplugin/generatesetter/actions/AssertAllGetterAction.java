@@ -67,7 +67,7 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                 engineStaticImportsReversed.put(b
                         .substring(0, b.lastIndexOf("."))
                         .replace("static ", ""), a);
-                engineStaticImportsMethod.put(a, b.substring(b.lastIndexOf(".")));
+                engineStaticImportsMethod.put(a, b.substring(b.lastIndexOf(".") + 1));
             }
         });
     }
