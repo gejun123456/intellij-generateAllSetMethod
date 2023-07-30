@@ -475,6 +475,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                                              PsiMethod method) {
         if (!generateAllHandler.shouldAddDefaultValue()) {
             mainBuilder.append(generateAllHandler.formatLine(generateName + "." + method.getName() + "();"));
+            generateAllHandler.appendImportList(newImportList);
             return;
         }
 
@@ -579,6 +580,8 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             }
         }
         builder.append(");");
+
+        generateAllHandler.appendImportList(newImportList);
 
         if (generateAllHandler.forAssertWithDefaultValues()) {
             mainBuilder.append(generateAllHandler.formatLine(builder.toString()));
