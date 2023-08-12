@@ -1,0 +1,2 @@
+User user = userService.findByName("admin");
+String user = user.getName();

@@ -730,7 +730,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     @NotNull
     @Override
     public String getFamilyName() {
-        return CommonConstants.GENERATE_SETTER_METHOD;
+        return getText();
     }
 
 }

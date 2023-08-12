@@ -1,0 +1,4 @@
+User user = new User();
+user
+  .setName()
+  ;
