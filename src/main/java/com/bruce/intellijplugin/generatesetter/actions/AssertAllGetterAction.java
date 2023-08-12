@@ -16,8 +16,11 @@ package com.bruce.intellijplugin.generatesetter.actions;
 
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
+import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
@@ -27,14 +30,19 @@ import com.intellij.psi.PsiImportList;
 import com.intellij.psi.PsiImportStatement;
 import com.intellij.psi.PsiImportStaticStatement;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.PsiShortNamesCache;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.*;
+import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.ASSERT;
+import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.ASSERTJ;
+import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.JUNIT4;
+import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.JUNIT5;
+import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.TESTNG;
 
 /**
  * @author bruce ge
@@ -42,35 +50,38 @@ import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAct
 public class AssertAllGetterAction extends GenerateAllSetterBase {
     enum TestEngine {ASSERT, JUNIT4, JUNIT5, TESTNG, ASSERTJ}
 
-    private TestEngine currentFileTestEngine = TestEngine.ASSERT;
-    private Set<TestEngine> currentFileAssertsImported = new HashSet<>();
+    // imports to add when generating asserts.
+    private static final Map<TestEngine, String> engineImports = ImmutableMap.<TestEngine, String>builder()
+            .put(JUNIT4, "static org.junit.Assert.assertEquals")
+            .put(JUNIT5, "static org.junit.jupiter.api.Assertions.assertEquals")
+            .put(TESTNG, "static org.testng.Assert.assertEquals")
+            .put(ASSERTJ, "static org.assertj.core.api.Assertions.assertThat")
+            .put(ASSERT, "java.util.Objects")
+            .build();
 
-    private static final Map<TestEngine, String> engineImports = new HashMap<>();
-    // className -> engine
-    private static final Map<String, TestEngine> enginePlainImportsReversed = new HashMap<>();
-    // static className without static and method -> engine
-    private static final Map<String, TestEngine> engineStaticImportsReversed = new HashMap<>();
-    // engine -> static method like assertEquals
-    private static final Map<TestEngine, String> engineStaticImportsMethod = new HashMap<>();
+    // className like 'java.util.Objects' -> engine (only java.util.Objects)
+    private static final Map<String, TestEngine> enginePlainImportsReversed = ImmutableMap.<String, TestEngine>builder()
+            .put("java.util.Objects", ASSERT)
+            .build();
 
-    static {
-        engineImports.put(JUNIT4, "static org.junit.Assert.assertEquals");
-        engineImports.put(JUNIT5, "static org.junit.jupiter.api.Assertions.assertEquals");
-        engineImports.put(TESTNG, "static org.testng.Assert.assertEquals");
-        engineImports.put(ASSERTJ, "static org.assertj.core.api.Assertions.assertThat");
-        engineImports.put(ASSERT, "java.util.Objects");
+    // static className -> engine
+    private static final Map<String, TestEngine> engineStaticImportsReversed = ImmutableMap.<String, TestEngine>builder()
+            .put("org.junit.Assert", JUNIT4)
+            .put("org.junit.jupiter.api.Assertions", JUNIT5)
+            .put("org.testng.Assert", TESTNG)
+            .put("org.assertj.core.api.Assertions", ASSERTJ)
+            .build();
 
-        engineImports.forEach((a, b) -> {
-            if (!b.startsWith("static ")) {
-                enginePlainImportsReversed.put(b, a);
-            } else {
-                engineStaticImportsReversed.put(b
-                        .substring(0, b.lastIndexOf("."))
-                        .replace("static ", ""), a);
-                engineStaticImportsMethod.put(a, b.substring(b.lastIndexOf(".") + 1));
-            }
-        });
-    }
+    // engine -> assert static method
+    private static final Map<TestEngine, String> engineStaticImportsMethod = ImmutableMap.<TestEngine, String>builder()
+            .put(JUNIT4, "assertEquals")
+            .put(JUNIT5, "assertEquals")
+            .put(TESTNG, "assertEquals")
+            .put(ASSERTJ, "assertThat")
+            .build();
+
+    private Project project;
+    private PsiFile containingFile;
 
     public AssertAllGetterAction() {
         setGenerateAllHandler(new GenerateAllAssertsHandlerAdapter(true));
@@ -97,74 +108,114 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
         boolean inTestSourceContent = instance.getFileIndex().isInTestSourceContent(virtualFile);
 
         if (inTestSourceContent) {
-            currentFileAssertsImported = new HashSet<>();
-            currentFileTestEngine = detectCurrentTestEngine(containingFile);
+            this.project = project;
+            this.containingFile = containingFile;
             return super.isAvailable(project, editor, element);
         }
         return false;
     }
 
-    private TestEngine detectCurrentTestEngine(PsiFile containingFile) {
-        if (containingFile instanceof PsiJavaFile) {
-            PsiJavaFile javaFile = (PsiJavaFile) containingFile;
-            PsiImportList importList = javaFile.getImportList();
 
-            if (importList != null) {
-                PsiImportStaticStatement[] importStaticStatements = importList.getImportStaticStatements();
-                for (PsiImportStaticStatement importStaticStatement : importStaticStatements) {
+    class GenerateAllAssertsHandlerAdapter extends GenerateAllHandlerAdapter {
+        private final boolean generateWithDefaultValues;
+        private final Set<TestEngine> currentFileImportedEngines = new HashSet<>();
+        private TestEngine currentFileTestEngine = TestEngine.ASSERT;
 
-                    PsiClass psiClass = importStaticStatement.resolveTargetClass();
-                    if (psiClass == null) {
-                        continue;
-                    }
+        public GenerateAllAssertsHandlerAdapter(boolean generateWithDefaultValues) {
+            this.generateWithDefaultValues = generateWithDefaultValues;
+        }
 
-                    String qualifiedName = psiClass.getQualifiedName();
-                    TestEngine testEngine = engineStaticImportsReversed.get(qualifiedName);
-                    if (testEngine != null) {
-                        String referenceName = importStaticStatement.getReferenceName();
-                        if (referenceName == null || referenceName.equals(engineStaticImportsMethod.get(testEngine))) {
-                            currentFileAssertsImported.add(testEngine);
+        private TestEngine detectCurrentTestEngine(Project project, PsiFile containingFile) {
+
+            if (containingFile instanceof PsiJavaFile) {
+                PsiJavaFile javaFile = (PsiJavaFile) containingFile;
+                PsiImportList importList = javaFile.getImportList();
+
+                // prefer AssertJ if it is in classpath
+                ProjectFileIndex index = ProjectFileIndex.getInstance(project);
+                Module module = index.getModuleForFile(containingFile.getVirtualFile());
+                if (module != null) {
+                    GlobalSearchScope searchScope = GlobalSearchScope.moduleRuntimeScope(module, true);
+                    PsiClass[] lists = PsiShortNamesCache.getInstance(project)
+                            .getClassesByName("Assertions", searchScope);
+
+                    for (PsiClass psiClass : lists) {
+                        if ("org.assertj.core.api.Assertions".equals(psiClass.getName())) {
+                            detectImportedEngines(importList);
+                            return ASSERTJ;
                         }
                     }
                 }
 
-                PsiImportStatement[] importStatements = importList.getImportStatements();
 
-                for (PsiImportStatement importStatement : importStatements) {
-                    String qualifiedName = importStatement.getQualifiedName();
-                    if (qualifiedName == null) {
-                        continue;
-                    }
+                if (importList != null) {
+                    detectImportedEngines(importList);
 
-                    TestEngine testEngine = enginePlainImportsReversed.get(qualifiedName);
-                    if (testEngine != null) {
-                        currentFileAssertsImported.add(testEngine);
-                    }
+                    PsiImportStatement[] importStatements = importList.getImportStatements();
 
-                    if (qualifiedName.startsWith("org.junit.jupiter.api.")) {
-                        return TestEngine.JUNIT5;
-                    }
-                    if (qualifiedName.startsWith("org.junit.")) {
-                        return TestEngine.JUNIT4;
-                    }
-                    if (qualifiedName.startsWith("org.assertj.")) {
-                        return TestEngine.ASSERTJ;
-                    }
-                    if (qualifiedName.startsWith("org.testng.")) {
-                        return TestEngine.TESTNG;
+                    for (PsiImportStatement importStatement : importStatements) {
+                        String qualifiedName = importStatement.getQualifiedName();
+                        if (qualifiedName == null) {
+                            continue;
+                        }
+
+                        if (qualifiedName.startsWith("org.junit.jupiter.api.")) {
+                            return TestEngine.JUNIT5;
+                        }
+                        if (qualifiedName.startsWith("org.junit.")) {
+                            return TestEngine.JUNIT4;
+                        }
+                        if (qualifiedName.startsWith("org.assertj.")) {
+                            return TestEngine.ASSERTJ;
+                        }
+                        if (qualifiedName.startsWith("org.testng.")) {
+                            return TestEngine.TESTNG;
+                        }
                     }
                 }
             }
+
+            return TestEngine.ASSERT;
         }
 
-        return TestEngine.ASSERT;
-    }
+        private void detectImportedEngines(PsiImportList importList) {
+            currentFileImportedEngines.clear();
 
-    class GenerateAllAssertsHandlerAdapter extends GenerateAllHandlerAdapter {
-        private final boolean generateWithDefaultValues;
+            if (importList == null) {
+                return;
+            }
 
-        public GenerateAllAssertsHandlerAdapter(boolean generateWithDefaultValues) {
-            this.generateWithDefaultValues = generateWithDefaultValues;
+            PsiImportStaticStatement[] importStaticStatements = importList.getImportStaticStatements();
+
+            for (PsiImportStaticStatement importStaticStatement : importStaticStatements) {
+                PsiClass psiClass = importStaticStatement.resolveTargetClass();
+                if (psiClass == null) {
+                    continue;
+                }
+
+                String qualifiedName = psiClass.getQualifiedName();
+                TestEngine testEngine = engineStaticImportsReversed.get(qualifiedName);
+                if (testEngine != null) {
+                    String referenceName = importStaticStatement.getReferenceName(); // like assertEquals
+                    if (referenceName == null || referenceName.equals(engineStaticImportsMethod.get(testEngine))) {
+                        currentFileImportedEngines.add(testEngine);
+                    }
+                }
+            }
+
+            PsiImportStatement[] importStatements = importList.getImportStatements();
+
+            for (PsiImportStatement importStatement : importStatements) {
+                String qualifiedName = importStatement.getQualifiedName();
+                if (qualifiedName == null) {
+                    continue;
+                }
+
+                TestEngine testEngine = enginePlainImportsReversed.get(qualifiedName);
+                if (testEngine != null) {
+                    currentFileImportedEngines.add(testEngine);
+                }
+            }
         }
 
         @Override
@@ -195,6 +246,8 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                 value = "";
             }
 
+            currentFileTestEngine = detectCurrentTestEngine(project, containingFile);
+
             switch (currentFileTestEngine) {
                 case JUNIT4:
                 case JUNIT5:
@@ -212,7 +265,7 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
 
         @Override
         public void appendImportList(Set<String> newImportList) {
-            if (!currentFileAssertsImported.contains(currentFileTestEngine)) {
+            if (!currentFileImportedEngines.contains(currentFileTestEngine)) {
                 newImportList.add(engineImports.get(currentFileTestEngine));
             }
         }
