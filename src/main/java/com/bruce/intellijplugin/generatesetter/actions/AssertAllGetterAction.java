@@ -80,8 +80,8 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
             .put(ASSERTJ, "assertThat")
             .build();
 
-    private Project project;
-    private PsiFile containingFile;
+    protected Project project;
+    protected PsiFile containingFile;
 
     public AssertAllGetterAction() {
         setGenerateAllHandler(new GenerateAllAssertsHandlerAdapter(true));
@@ -118,14 +118,19 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
 
     class GenerateAllAssertsHandlerAdapter extends GenerateAllHandlerAdapter {
         private final boolean generateWithDefaultValues;
-        private final Set<TestEngine> currentFileImportedEngines = new HashSet<>();
-        private TestEngine currentFileTestEngine = TestEngine.ASSERT;
+
+        protected final Set<TestEngine> currentFileImportedEngines = new HashSet<>();
+        protected TestEngine currentFileTestEngine = TestEngine.ASSERT;
 
         public GenerateAllAssertsHandlerAdapter(boolean generateWithDefaultValues) {
             this.generateWithDefaultValues = generateWithDefaultValues;
         }
 
-        private TestEngine detectCurrentTestEngine(Project project, PsiFile containingFile) {
+        public void detectCurrentTestEngine(Project project, PsiFile containingFile) {
+            currentFileTestEngine = detectCurrentTestEngineInternal(project, containingFile);
+        }
+
+        private TestEngine detectCurrentTestEngineInternal(Project project, PsiFile containingFile) {
 
             if (containingFile instanceof PsiJavaFile) {
                 PsiJavaFile javaFile = (PsiJavaFile) containingFile;
@@ -246,7 +251,7 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                 value = "";
             }
 
-            currentFileTestEngine = detectCurrentTestEngine(project, containingFile);
+            detectCurrentTestEngine(project, containingFile);
 
             switch (currentFileTestEngine) {
                 case JUNIT4:

@@ -160,6 +160,11 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.AssertNotNullAction</className>
+            <category>GenerateAllSetter</category>
+        </intentionAction>
+
+        <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction</className>
             <category>GenerateAllSetter</category>
         </intentionAction>
