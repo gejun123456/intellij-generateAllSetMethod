@@ -16,6 +16,7 @@ package com.bruce.intellijplugin.generatesetter.utils;
 
 import com.bruce.intellijplugin.generatesetter.Parameters;
 import com.bruce.intellijplugin.generatesetter.RealParam;
+import com.bruce.intellijplugin.generatesetter.template.GenerateSetterService;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -38,6 +39,11 @@ import java.util.*;
 public class PsiToolUtils {
 
     public static boolean checkGuavaExist(Project project, @NotNull PsiElement element) {
+        GenerateSetterService instance = GenerateSetterService.getInstance();
+        if (instance.getState() != null && Boolean.TRUE.equals(instance.getState().getUseJdkClassesOnly())) {
+            return false;
+        }
+
         Module moduleForPsiElement = ModuleUtilCore.findModuleForPsiElement(element);
         if(moduleForPsiElement==null){
             return false;
