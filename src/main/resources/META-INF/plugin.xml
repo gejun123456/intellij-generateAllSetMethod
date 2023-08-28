@@ -8,21 +8,30 @@
       |&nbsp<a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a></p>
       <p> 一键调用一个对象的所有的set方法,get方法等</p>
       <p>在方法上生成两个对象的转换</p>
-      <p> generate call to class all setter method by alt+enter on the variable class</p>
-      <p> generate a converter two object when they have same field</p>
-      <p> generate default value when returnType is List Set Map </p>
-      <p> generate call to assertThat on all getter method</p>
-        <p> generate call to getter method</p>
-      <p> like a user class has setName, setPassword methods</p>
-      <p> generate converter between two class like aa.setHello(bb.getHello()) on method</p>
-      <p> <b>User</b> user = new User();</p>
-      <p> then alt+enter on User</p>
-      <p> will generate following</p>
-      <p> user.setName("");</p>
-      <p> user.setPassword("");</p>
-      <p> support all your class set method including super class</p>
-      <p> support kotlin
-      <p> view more on <a href ="https://github.com/gejun123456/intellij-generateAllSetMethod">https://github.com/gejun123456/intellij-generateAllSetMethod</a></p>
+      <br/>
+      <p><b>Features</b></p>
+      <ul>
+          <li>generate all setters by pressing Alt+Enter on the variable's class</li>
+          <li>generate all setters with default values for most types including List, Set and Map</li>
+          <li>generate a converter between two classes that have matching fields</li>
+          <li>generate assertThat calls for all getter methods</li>
+      </ul>
+
+      <p><b>Usage</b></p>
+      <p>Let some class User has setName and setPassword methods and you have a declaration:<br/>
+      <div style="margin: 10px">
+        <code>User user = <b>new</b> User();</code>
+      </div>
+      Set the caret to the word User and press Alt+Enter key. The plugin will produce the code:</p>
+      <div style="margin: 10px">
+          <code>
+              user.setName("");<br/>
+              user.setPassword("");<br/>
+          </code>
+      </div>
+
+      <p>Works with Java and Kotlin programming languages.</p>
+      <p>View more on <a href ="https://github.com/gejun123456/intellij-generateAllSetMethod">https://github.com/gejun123456/intellij-generateAllSetMethod</a></p>
     ]]></description>
 
     <change-notes><![CDATA[
@@ -169,8 +178,8 @@
         <applicationService serviceImplementation="com.bruce.intellijplugin.generatesetter.template.GenerateSetterService"/>
 
         <applicationConfigurable instance="com.bruce.intellijplugin.generatesetter.template.MySettings"/>
-<!--        <intentionAction>-->
-<!--            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateByTemplateAction</className>-->
-<!--        </intentionAction>-->
+        <!--        <intentionAction>-->
+        <!--            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateByTemplateAction</className>-->
+        <!--        </intentionAction>-->
     </extensions>
 </idea-plugin>
