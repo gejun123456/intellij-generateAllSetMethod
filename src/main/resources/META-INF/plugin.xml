@@ -145,34 +145,47 @@
     <extensions defaultExtensionNs="com.intellij">
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction</className>
+            <category>GenerateAllSetter</category>
         </intentionAction>
 
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateWithBuilderAction</className>
+            <category>GenerateAllSetter</category>
         </intentionAction>
 
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateWithAccessorsAction</className>
+            <category>GenerateAllSetter</category>
         </intentionAction>
 
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterNoDefaultValueAction</className>
+            <category>GenerateAllSetter</category>
         </intentionAction>
 
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateBuilderGetterFromFunctionAction</className>
+            <category>GenerateAllSetter</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.bruce.intellijplugin.generatesetter.actions.AssertJAssertAllGetterAction</className>
+            <className>com.bruce.intellijplugin.generatesetter.actions.AssertNotNullAction</className>
+            <category>GenerateAllSetter</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction</className>
+            <category>GenerateAllSetter</category>
         </intentionAction>
 
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateSetterGetterFromFunctionAction</className>
+            <category>GenerateAllSetter</category>
         </intentionAction>
 
         <intentionAction>
             <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAllGetterAction</className>
+            <category>GenerateAllSetter</category>
         </intentionAction>
 
         <applicationService serviceImplementation="com.bruce.intellijplugin.generatesetter.template.GenerateSetterService"/>

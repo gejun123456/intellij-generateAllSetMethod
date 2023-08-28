@@ -32,7 +32,6 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDeclarationStatement;
 import com.intellij.psi.PsiDocumentManager;
@@ -69,9 +68,16 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     private static final String SET_SETTER_PREFIX = "set";
     private static final String WITH_SETTER_PREFIX = "with";
     public static final String STATIC = "static";
-    private final GenerateAllHandler generateAllHandler;
+    private GenerateAllHandler generateAllHandler;
+
+    public GenerateAllSetterBase() {
+    }
 
     public GenerateAllSetterBase(GenerateAllHandler generateAllHandler) {
+        this.generateAllHandler = generateAllHandler;
+    }
+
+    public void setGenerateAllHandler(GenerateAllHandler generateAllHandler) {
         this.generateAllHandler = generateAllHandler;
     }
 
@@ -440,7 +446,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     }
 
     @NotNull
-    private String generateStringForNoParam(String generateName,
+    protected String generateStringForNoParam(String generateName,
                                             List<PsiMethod> methodList, String splitText,
                                             Set<String> newImportList, boolean hasGuava) {
         StringBuilder builder = new StringBuilder();
@@ -465,22 +471,35 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     }
 
     private void generateDefaultForOneMethod(String generateName,
-                                             Set<String> newImportList, boolean hasGuava, StringBuilder builder,
+                                             Set<String> newImportList, boolean hasGuava, StringBuilder mainBuilder,
                                              PsiMethod method) {
-        PsiParameter[] parameters = method.getParameterList().getParameters();
-
         if (!generateAllHandler.shouldAddDefaultValue()) {
-            builder.append(generateAllHandler.formatLine(generateName + "." + method.getName() + "();"));
+            mainBuilder.append(generateAllHandler.formatLine(generateName + "." + method.getName() + "();"));
+            generateAllHandler.appendImportList(newImportList);
             return;
         }
 
+        PsiType[] types;
+        if (generateAllHandler.forAssertWithDefaultValues()) {
+            types = method.getReturnType() != null
+                    ? new PsiType[]{method.getReturnType()}
+                    : new PsiType[0];
+        } else {
+            PsiParameter[] parameters = method.getParameterList().getParameters();
+            types = new PsiType[parameters.length];
+            for (int i = 0; i < types.length; i++) {
+                types[i] = parameters[i].getType();
+            }
+        }
+
+        StringBuilder builder = new StringBuilder();
         builder.append(generateName + "." + method.getName() + "(");
 
-        int u = parameters.length;
+        int u = types.length;
         int h = 0;
-        for (PsiParameter parameter : parameters) {
+        for (PsiType type : types) {
             h++;
-            String classType = parameter.getType().getCanonicalText();
+            String classType = type.getCanonicalText();
             String ss = typeGeneratedMap.get(classType);
             if (ss != null) {
                 builder.append(ss);
@@ -490,8 +509,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                 }
             } else {
                 // shall check which import list to use.
-                Parameters paramInfo = PsiToolUtils
-                        .extractParamInfo(parameter.getType());
+                Parameters paramInfo = PsiToolUtils.extractParamInfo(type);
                 if (paramInfo.getCollectName() != null && guavaTypeMaps
                         .containsKey(paramInfo.getCollectName())) {
                     if (hasGuava) {
@@ -530,7 +548,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                                 .getRealPackage();
                         // todo could add more to the default package values.
                         String s = defaultPacakgeValues.get(realPackage);
-                        final PsiClass psiClassOfParameter = PsiTypesUtil.getPsiClass(parameter.getType());
+                        final PsiClass psiClassOfParameter = PsiTypesUtil.getPsiClass(type);
                         if (s != null) {
                             builder.append(s);
                         }
@@ -562,6 +580,14 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             }
         }
         builder.append(");");
+
+        generateAllHandler.appendImportList(newImportList);
+
+        if (generateAllHandler.forAssertWithDefaultValues()) {
+            mainBuilder.append(generateAllHandler.formatLine(builder.toString()));
+        } else {
+            mainBuilder.append(builder);
+        }
     }
 
     private static void appendCollectNotEmpty(StringBuilder builder,
@@ -704,7 +730,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     @NotNull
     @Override
     public String getFamilyName() {
-        return CommonConstants.GENERATE_SETTER_METHOD;
+        return getText();
     }
 
 }

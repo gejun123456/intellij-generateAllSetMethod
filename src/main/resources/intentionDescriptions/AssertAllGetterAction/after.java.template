@@ -1,0 +1,2 @@
+User user = userService.findByName("admin");
+assertEquals("", user.getName());

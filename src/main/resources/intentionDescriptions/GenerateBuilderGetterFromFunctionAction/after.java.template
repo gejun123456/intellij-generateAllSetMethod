@@ -1,0 +1,6 @@
+public User create(User old) {
+    User user = User.builder()
+        .name(old.getName())
+        .build();
+    return user;
+}

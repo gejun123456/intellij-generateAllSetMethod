@@ -16,6 +16,8 @@ package com.bruce.intellijplugin.generatesetter;
 
 import com.bruce.intellijplugin.generatesetter.actions.GenerateAllHandler;
 
+import java.util.Set;
+
 /**
  * @author bruce ge
  */
@@ -48,5 +50,15 @@ public class GenerateAllHandlerAdapter implements GenerateAllHandler {
     @Override
     public boolean forAccessor() {
         return false;
+    }
+
+    @Override
+    public boolean forAssertWithDefaultValues() {
+        return false;
+    }
+
+    @Override
+    public void appendImportList(Set<String> newImportList) {
+        // nothing
     }
 }

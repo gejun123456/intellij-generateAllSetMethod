@@ -14,6 +14,8 @@
 
 package com.bruce.intellijplugin.generatesetter.actions;
 
+import java.util.Set;
+
 /**
  * @author bruce ge
  */
@@ -30,4 +32,8 @@ public interface GenerateAllHandler {
     boolean forBuilder();
 
     boolean forAccessor();
+
+    boolean forAssertWithDefaultValues();
+
+    void appendImportList(Set<String> newImportList);
 }
