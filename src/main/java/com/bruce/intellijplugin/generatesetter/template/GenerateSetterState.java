@@ -28,6 +28,8 @@ public class GenerateSetterState {
     private Boolean useJdkClassesOnly = false;
     private Boolean generateByTemplate = false;
 
+    private String preferredTestingFramework = "JUnit 5";
+
     private List<Template> templateList = Lists.newArrayList();
 
     public Boolean getUseJdkClassesOnly() {
@@ -66,6 +68,7 @@ public class GenerateSetterState {
                 .append(useJdkClassesOnly, that.useJdkClassesOnly)
                 .append(generateByTemplate, that.generateByTemplate)
                 .append(templateList, that.templateList)
+                .append(preferredTestingFramework, that.preferredTestingFramework)
                 .isEquals();
     }
 
@@ -75,6 +78,15 @@ public class GenerateSetterState {
                 .append(useJdkClassesOnly)
                 .append(generateByTemplate)
                 .append(templateList)
+                .append(preferredTestingFramework)
                 .toHashCode();
+    }
+
+    public String getPreferredTestingFramework() {
+        return preferredTestingFramework;
+    }
+
+    public void setPreferredTestingFramework(String preferredTestingFramework) {
+        this.preferredTestingFramework = preferredTestingFramework;
     }
 }

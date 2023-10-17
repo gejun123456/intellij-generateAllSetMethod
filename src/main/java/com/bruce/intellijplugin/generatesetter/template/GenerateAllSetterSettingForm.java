@@ -63,6 +63,8 @@ public class GenerateAllSetterSettingForm {
     private JPanel splitterPanel;
     private JCheckBox useOnlyJDKClassesCheckBox;
     private JPanel generateByTemplateSettings;
+    private JComboBox comboBoxPreferredTestFramework;
+    private JLabel preferredTestingFrameworkForLabel;
     private GenerateSetterState myGenerateSetterState;
     private int currentSelectedIndex = -1;
 
@@ -252,6 +254,7 @@ public class GenerateAllSetterSettingForm {
     public GenerateSetterState getTheState() {
         myGenerateSetterState.setGenerateByTemplate(enableGenerateByTemplateCheckBox.isSelected());
         myGenerateSetterState.setUseJdkClassesOnly(useOnlyJDKClassesCheckBox.isSelected());
+        myGenerateSetterState.setPreferredTestingFramework(((String) comboBoxPreferredTestFramework.getSelectedItem()));
         return myGenerateSetterState;
     }
 
