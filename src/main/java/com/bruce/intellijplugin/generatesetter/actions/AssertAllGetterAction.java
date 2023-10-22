@@ -16,6 +16,10 @@ package com.bruce.intellijplugin.generatesetter.actions;
 
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
+import com.bruce.intellijplugin.generatesetter.TestEngine;
+import com.bruce.intellijplugin.generatesetter.template.GenerateSetterService;
+import com.bruce.intellijplugin.generatesetter.template.GenerateSetterState;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
@@ -30,33 +34,31 @@ import com.intellij.psi.PsiImportList;
 import com.intellij.psi.PsiImportStatement;
 import com.intellij.psi.PsiImportStaticStatement;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.impl.compiled.ClsClassImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.ASSERT;
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.ASSERTJ;
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.JUNIT4;
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.JUNIT5;
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.TESTNG;
+import static com.bruce.intellijplugin.generatesetter.TestEngine.*;
 
 /**
  * @author bruce ge
  */
 public class AssertAllGetterAction extends GenerateAllSetterBase {
-    enum TestEngine {ASSERT, JUNIT4, JUNIT5, TESTNG, ASSERTJ}
 
     // imports to add when generating asserts.
-    private static final Map<TestEngine, String> engineImports = ImmutableMap.<TestEngine, String>builder()
-            .put(JUNIT4, "static org.junit.Assert.assertEquals")
-            .put(JUNIT5, "static org.junit.jupiter.api.Assertions.assertEquals")
-            .put(TESTNG, "static org.testng.Assert.assertEquals")
-            .put(ASSERTJ, "static org.assertj.core.api.Assertions.assertThat")
-            .put(ASSERT, "java.util.Objects")
+    private static final Map<TestEngine, List<String>> engineImports = ImmutableMap.<TestEngine, List<String>>builder()
+            .put(JUNIT4, ImmutableList.of("static org.junit.Assert.assertEquals"))
+            .put(JUNIT5, ImmutableList.of("static org.junit.jupiter.api.Assertions.assertEquals"))
+            .put(TESTNG, ImmutableList.of("static org.testng.Assert.assertEquals"))
+            .put(ASSERTJ, ImmutableList.of("static org.assertj.core.api.Assertions.assertThat"))
+            .put(ASSERT, ImmutableList.of("java.util.Objects"))
+            .put(HAMCREST, ImmutableList.of("static org.hamcrest.MatcherAssert.assertThat", "org.hamcrest.Matchers.*"))
             .build();
 
     // className like 'java.util.Objects' -> engine (only java.util.Objects)
@@ -70,6 +72,7 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
             .put("org.junit.jupiter.api.Assertions", JUNIT5)
             .put("org.testng.Assert", TESTNG)
             .put("org.assertj.core.api.Assertions", ASSERTJ)
+            .put("org.hamcrest.MatcherAssert", HAMCREST)
             .build();
 
     // engine -> assert static method
@@ -78,6 +81,7 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
             .put(JUNIT5, "assertEquals")
             .put(TESTNG, "assertEquals")
             .put(ASSERTJ, "assertThat")
+            .put(HAMCREST, "assertThat")
             .build();
 
     protected Project project;
@@ -136,18 +140,25 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                 PsiJavaFile javaFile = (PsiJavaFile) containingFile;
                 PsiImportList importList = javaFile.getImportList();
 
-                // prefer AssertJ if it is in classpath
+
+                // prefer TestEngine from settings if it is in classpath
                 ProjectFileIndex index = ProjectFileIndex.getInstance(project);
                 Module module = index.getModuleForFile(containingFile.getVirtualFile());
                 if (module != null) {
-                    GlobalSearchScope searchScope = GlobalSearchScope.moduleRuntimeScope(module, true);
-                    PsiClass[] lists = PsiShortNamesCache.getInstance(project)
-                            .getClassesByName("Assertions", searchScope);
+                    GenerateSetterState state = GenerateSetterService.getInstance().getState();
+                    TestEngine preferredTestEngine = state.getPreferredTestEngine();
 
-                    for (PsiClass psiClass : lists) {
-                        if ("org.assertj.core.api.Assertions".equals(psiClass.getName())) {
+                    String assertionsClassName = preferredTestEngine.getAssertionsClassName();
+
+                    GlobalSearchScope searchScope = GlobalSearchScope.moduleRuntimeScope(module, true);
+                    PsiClass[] projectAssertionClasses = PsiShortNamesCache.getInstance(project)
+                            .getClassesByName(assertionsClassName, searchScope);
+
+                    for (PsiClass psiClass : projectAssertionClasses) {
+                        String psiClassQualifiedName = psiClass.getQualifiedName();
+                        if (String.format("%s.%s", preferredTestEngine.getAssertionsPackage(), preferredTestEngine.getAssertionsClassName()).equals(psiClassQualifiedName)) {
                             detectImportedEngines(importList);
-                            return ASSERTJ;
+                            return preferredTestEngine;
                         }
                     }
                 }
@@ -165,22 +176,25 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                         }
 
                         if (qualifiedName.startsWith("org.junit.jupiter.api.")) {
-                            return TestEngine.JUNIT5;
+                            return JUNIT5;
                         }
                         if (qualifiedName.startsWith("org.junit.")) {
-                            return TestEngine.JUNIT4;
+                            return JUNIT4;
                         }
                         if (qualifiedName.startsWith("org.assertj.")) {
-                            return TestEngine.ASSERTJ;
+                            return ASSERTJ;
                         }
                         if (qualifiedName.startsWith("org.testng.")) {
-                            return TestEngine.TESTNG;
+                            return TESTNG;
+                        }
+                        if (qualifiedName.startsWith("org.hamcrest.")) {
+                            return HAMCREST;
                         }
                     }
                 }
             }
 
-            return TestEngine.ASSERT;
+            return ASSERT;
         }
 
         private void detectImportedEngines(PsiImportList importList) {
@@ -263,6 +277,8 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                     return "assertThat(" + getter + ").isEqualTo(" + value + ");";
                 case ASSERT:
                     return "assert Objects.equals(" + value + ", " + getter + ");";
+                case HAMCREST:
+                    return "assertThat(" + value + ", equalTo(" + getter + ");";
                 default:
                     throw new Error("Unknown case: " + currentFileTestEngine);
             }
@@ -271,7 +287,7 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
         @Override
         public void appendImportList(Set<String> newImportList) {
             if (!currentFileImportedEngines.contains(currentFileTestEngine)) {
-                newImportList.add(engineImports.get(currentFileTestEngine));
+                newImportList.addAll(engineImports.get(currentFileTestEngine));
             }
         }
     }

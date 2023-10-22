@@ -15,6 +15,7 @@
 package com.bruce.intellijplugin.generatesetter.template;
 
 
+import com.bruce.intellijplugin.generatesetter.TestEngine;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -28,7 +29,7 @@ public class GenerateSetterState {
     private Boolean useJdkClassesOnly = false;
     private Boolean generateByTemplate = false;
 
-    private String preferredTestingFramework = "JUnit 5";
+    private TestEngine preferredTestEngine = TestEngine.ASSERTJ;
 
     private List<Template> templateList = Lists.newArrayList();
 
@@ -68,7 +69,7 @@ public class GenerateSetterState {
                 .append(useJdkClassesOnly, that.useJdkClassesOnly)
                 .append(generateByTemplate, that.generateByTemplate)
                 .append(templateList, that.templateList)
-                .append(preferredTestingFramework, that.preferredTestingFramework)
+                .append(preferredTestEngine, that.preferredTestEngine)
                 .isEquals();
     }
 
@@ -78,15 +79,15 @@ public class GenerateSetterState {
                 .append(useJdkClassesOnly)
                 .append(generateByTemplate)
                 .append(templateList)
-                .append(preferredTestingFramework)
+                .append(preferredTestEngine)
                 .toHashCode();
     }
 
-    public String getPreferredTestingFramework() {
-        return preferredTestingFramework;
+    public TestEngine getPreferredTestEngine() {
+        return preferredTestEngine;
     }
 
-    public void setPreferredTestingFramework(String preferredTestingFramework) {
-        this.preferredTestingFramework = preferredTestingFramework;
+    public void setPreferredTestEngine(TestEngine preferredTestEngine) {
+        this.preferredTestEngine = preferredTestEngine;
     }
 }
