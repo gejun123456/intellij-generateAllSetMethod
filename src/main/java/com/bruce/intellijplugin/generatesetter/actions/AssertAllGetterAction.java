@@ -27,13 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiImportList;
-import com.intellij.psi.PsiImportStatement;
-import com.intellij.psi.PsiImportStaticStatement;
-import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.*;
 import com.intellij.psi.impl.compiled.ClsClassImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
@@ -209,15 +203,27 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
             for (PsiImportStaticStatement importStaticStatement : importStaticStatements) {
                 PsiClass psiClass = importStaticStatement.resolveTargetClass();
                 if (psiClass == null) {
-                    continue;
-                }
+                    //if it is a static import of a method from any testengine
+                    PsiJavaCodeReferenceElement importReference = importStaticStatement.getImportReference();
+                    if (importReference == null || importReference.getQualifiedName() == null) {
+                        continue;
+                    }
+                    String qualifiedName = importReference.getQualifiedName();
+                    engineStaticImportsReversed.entrySet()
+                            .stream()
+                            .filter(entry -> qualifiedName.startsWith(entry.getKey()))
+                            .findFirst()
+                            .ifPresent(entry -> currentFileImportedEngines.add(entry.getValue()));
 
-                String qualifiedName = psiClass.getQualifiedName();
-                TestEngine testEngine = engineStaticImportsReversed.get(qualifiedName);
-                if (testEngine != null) {
-                    String referenceName = importStaticStatement.getReferenceName(); // like assertEquals
-                    if (referenceName == null || referenceName.equals(engineStaticImportsMethod.get(testEngine))) {
-                        currentFileImportedEngines.add(testEngine);
+                } else {
+
+                    String qualifiedName = psiClass.getQualifiedName();
+                    TestEngine testEngine = engineStaticImportsReversed.get(qualifiedName);
+                    if (testEngine != null) {
+                        String referenceName = importStaticStatement.getReferenceName(); // like assertEquals
+                        if (referenceName == null || referenceName.equals(engineStaticImportsMethod.get(testEngine))) {
+                            currentFileImportedEngines.add(testEngine);
+                        }
                     }
                 }
             }
