@@ -5,7 +5,8 @@
     <description><![CDATA[
 
     <p><a href="https://github.com/gejun123456/intellij-generateAllSetMethod">GitHub</a>
-      |&nbsp<a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a></p>
+      |&nbsp<a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a>
+        |&nbsp<a href="https://www.bilibili.com/video/BV11o4y1P7V7">bilibili</a></p>
       <p> 一键调用一个对象的所有的set方法,get方法等</p>
       <p>在方法上生成两个对象的转换</p>
       <br/>
