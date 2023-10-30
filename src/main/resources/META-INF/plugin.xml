@@ -35,6 +35,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.8.4</strong>
+        <ul>
+            <li>[NEW]Test engines support: AssertJ, JUnit 4/5, TestNG, JDK assert with auto-detection</li>
+            <li>[NEW]Option to disable guava code generation. + splitter in preferences dialog</li>
+            <li>Thanks <a href="https://github.com/hza">hza</a> for the contribution</li>
+        </ul>
         <strong>2.8.3</strong>
         <ul>
             <li>[FIX]Must not start write action from within read action in the other thread - deadlock is coming</li>
