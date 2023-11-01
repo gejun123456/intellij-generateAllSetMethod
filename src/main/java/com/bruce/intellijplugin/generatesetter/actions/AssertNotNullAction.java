@@ -1,6 +1,8 @@
 package com.bruce.intellijplugin.generatesetter.actions;
 
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
+import com.bruce.intellijplugin.generatesetter.TestEngine;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.psi.PsiMethod;
 import org.jetbrains.annotations.NotNull;
@@ -9,20 +11,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.ASSERT;
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.ASSERTJ;
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.JUNIT4;
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.JUNIT5;
-import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.TESTNG;
-
 public class AssertNotNullAction extends AssertAllGetterAction {
     // imports to add when generating asserts.
-    private static final Map<TestEngine, String> engineImports = ImmutableMap.<TestEngine, String>builder()
-            .put(JUNIT4, "static org.junit.Assert.assertNotNull")
-            .put(JUNIT5, "static org.junit.jupiter.api.Assertions.assertNotNull")
-            .put(TESTNG, "static org.testng.Assert.assertNotNull")
-            .put(ASSERTJ, "static org.assertj.core.api.Assertions.assertThat")
-            .put(ASSERT, "java.util.Objects")
+    private static final Map<TestEngine, List<String>> engineImports = ImmutableMap.<TestEngine, List<String>>builder()
+            .put(TestEngine.JUNIT4, ImmutableList.of("static org.junit.Assert.assertNotNull"))
+            .put(TestEngine.JUNIT5, ImmutableList.of("static org.junit.jupiter.api.Assertions.assertNotNull"))
+            .put(TestEngine.TESTNG, ImmutableList.of("static org.testng.Assert.assertNotNull"))
+            .put(TestEngine.ASSERTJ, ImmutableList.of("static org.assertj.core.api.Assertions.assertThat"))
+            .put(TestEngine.ASSERT, ImmutableList.of("java.util.Objects"))
+            .put(TestEngine.HAMCREST, ImmutableList.of("static org.hamcrest.MatcherAssert.assertThat", "org.hamcrest.Matchers.*"))
             .build();
 
     private final GenerateAllAssertsHandlerAdapter generateAllHandler;
@@ -48,7 +45,7 @@ public class AssertNotNullAction extends AssertAllGetterAction {
         Set<TestEngine> currentFileImportedEngines = generateAllHandler.currentFileImportedEngines;
 
         if (!currentFileImportedEngines.contains(currentFileTestEngine)) {
-            newImportList.add(engineImports.get(currentFileTestEngine));
+            newImportList.addAll(engineImports.get(currentFileTestEngine));
         }
 
         switch (currentFileTestEngine) {
@@ -60,6 +57,8 @@ public class AssertNotNullAction extends AssertAllGetterAction {
                 return splitText + "assertThat(" + generateName + ").isNotNull();";
             case ASSERT:
                 return splitText + "assert " + generateName + " != null";
+            case HAMCREST:
+                return splitText + "assertThat( " + generateName + ", notNullValue());";
             default:
                 throw new Error("Unknown case: " + currentFileTestEngine);
         }
