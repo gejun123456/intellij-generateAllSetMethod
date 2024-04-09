@@ -14,6 +14,13 @@
 
 package com.bruce.intellijplugin.generatesetter.actions;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GetInfo;
 import com.bruce.intellijplugin.generatesetter.Parameters;
@@ -51,13 +58,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author bruce ge
@@ -252,6 +252,9 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             insertText += generateStringForNoParam(generateName, methods,
                     splitText, importList, hasGuava);
         } else {
+            insertText = splitText + "if (" + info.getParamName() + " == null) {"
+                + indentText(splitText) + "return null;"
+                + splitText + "}" + insertText;
             insertText += generateStringForParam(generateName, methods,
                     splitText, importList, hasGuava, info);
         }
@@ -381,29 +384,47 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         return info;
     }
 
+    /**
+     * 分析当前方法的缩进符, 并追加缩进
+     * 为保持原方法功能, 返回值的开头会增加一个"\n"
+     * -
+     * Analyze the current method's indentation character and append indentation.
+     * To maintain the original function of the method, a "\n" will be added to the beginning of the return value.
+     *
+     * @param method   curr method
+     * @param document curr doc
+     * @return the indented text
+     */
     @NotNull
-    protected static String extractSplitText(PsiMethod method,
-                                           Document document) {
-        int startOffset = method.getTextRange().getStartOffset();
-        int lastLine = startOffset - 1;
-        String text = document.getText(new TextRange(lastLine, lastLine + 1));
-        boolean isTable = false;
-        while (!text.equals("\n")) {
-            if (text.equals('\t')) {
-                isTable = true;
-            }
-            lastLine--;
-            text = document.getText(new TextRange(lastLine, lastLine + 1));
+    protected static String extractSplitText(PsiMethod method, Document document) {
+        int methodStartOffset = method.getTextRange().getStartOffset();
+        int lineNumber = document.getLineNumber(methodStartOffset);
+        int lineStartOffset = document.getLineStartOffset(lineNumber);
+        String currIndentedText = document.getText(new TextRange(lineStartOffset, methodStartOffset));
+        return "\n" + indentText(currIndentedText);
+    }
+
+    /**
+     * 对文本进行缩进
+     * 本方法内部会判断原文本的缩进符是\t还是空格
+     * 增加的缩进如果是空格的话，默认使用4个空格
+     * -
+     * indent the text
+     * this method internally determines whether the original text's indentation character is a tab (\t) or a space.
+     * if the added indentation is spaces, the default is to use 4 spaces.
+     *
+     * @param text raw text
+     * @return the indented text
+     */
+    @NotNull
+    protected static String indentText(String text) {
+        if (text == null) {
+            return CommonConstants.INDENTATION_CHARACTER_4_SPACE;
         }
-        String methodStartToLastLineText = document
-                .getText(new TextRange(lastLine, startOffset));
-        String splitText = "";
-        if (isTable) {
-            splitText += methodStartToLastLineText + "\t";
-        } else {
-            splitText = methodStartToLastLineText + "    ";
-        }
-        return splitText;
+        return text +
+            (text.contains(CommonConstants.INDENTATION_CHARACTER_TAB)
+                ? CommonConstants.INDENTATION_CHARACTER_TAB
+                : CommonConstants.INDENTATION_CHARACTER_4_SPACE);
     }
 
     private void handleWithLocalVariable(PsiLocalVariable localVariable,

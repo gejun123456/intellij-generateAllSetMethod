@@ -77,6 +77,9 @@ public class Article {
     }
 
     public static Article convertFrom(User user){
+        if (user == null) {
+            return null;
+        }
         Article article = new Article();
         article.setId();
         article.setUuuuuuu(user.getUuuuuuu());
