@@ -252,6 +252,9 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             insertText += generateStringForNoParam(generateName, methods,
                     splitText, importList, hasGuava);
         } else {
+            insertText = splitText + "if (" + info.getParamName() + " == null) {"
+                + splitText + "    " + "return null;"
+                + splitText + "}" + insertText;
             insertText += generateStringForParam(generateName, methods,
                     splitText, importList, hasGuava, info);
         }
