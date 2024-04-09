@@ -31,4 +31,7 @@ public class CommonConstants {
     public static final String GENERATE_GETTER_METHOD = "Generate all getter";
 
     public static final String GENERATE_SETTER_METHOD_NO_DEAULT_VALUE = "";
+
+    public static final String INDENTATION_CHARACTER_TAB = "\t";
+    public static final String INDENTATION_CHARACTER_4_SPACE = "    ";
 }
