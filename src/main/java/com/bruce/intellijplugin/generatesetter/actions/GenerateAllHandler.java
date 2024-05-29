@@ -36,4 +36,6 @@ public interface GenerateAllHandler {
     boolean forAssertWithDefaultValues();
 
     void appendImportList(Set<String> newImportList);
+
+    boolean isSetterFromVariable();
 }

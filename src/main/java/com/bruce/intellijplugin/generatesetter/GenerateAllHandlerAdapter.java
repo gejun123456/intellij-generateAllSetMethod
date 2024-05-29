@@ -61,4 +61,9 @@ public class GenerateAllHandlerAdapter implements GenerateAllHandler {
     public void appendImportList(Set<String> newImportList) {
         // nothing
     }
+
+    @Override
+    public boolean isSetterFromVariable() {
+        return false;
+    }
 }

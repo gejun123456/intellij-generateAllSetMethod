@@ -1,0 +1,4 @@
+public void create() {
+    User old = selectOldUser();
+    User user = new User();
+}

@@ -14,21 +14,11 @@
 
 package com.bruce.intellijplugin.generatesetter.actions;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GetInfo;
 import com.bruce.intellijplugin.generatesetter.Parameters;
-import com.bruce.intellijplugin.generatesetter.complexreturntype.ComplexReturnTypeHandler;
-import com.bruce.intellijplugin.generatesetter.complexreturntype.InsertDto;
-import com.bruce.intellijplugin.generatesetter.complexreturntype.ListReturnTypeHandler;
-import com.bruce.intellijplugin.generatesetter.complexreturntype.MapReturnTypeHandler;
-import com.bruce.intellijplugin.generatesetter.complexreturntype.SetReturnTypeHandler;
+import com.bruce.intellijplugin.generatesetter.complexreturntype.*;
+import com.bruce.intellijplugin.generatesetter.dialog.VariableDialog;
 import com.bruce.intellijplugin.generatesetter.utils.PsiClassUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiDocumentUtils;
 import com.bruce.intellijplugin.generatesetter.utils.PsiToolUtils;
@@ -38,19 +28,9 @@ import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDeclarationStatement;
-import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiLocalVariable;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiTypeElement;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.util.IncorrectOperationException;
@@ -58,6 +38,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author bruce ge
@@ -185,8 +168,11 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             if (!(psiLocal.getParent() instanceof PsiDeclarationStatement)) {
                 return;
             }
-            handleWithLocalVariable(psiLocal, project, psiLocal);
-
+            if (generateAllHandler.isSetterFromVariable()) {
+                handleWithLocalVariableFromVariable(psiLocal, project, psiLocal);
+            } else {
+                handleWithLocalVariable(psiLocal, project, psiLocal);
+            }
         } else if (psiParent instanceof PsiMethod) {
             PsiMethod method = (PsiMethod) psiParent;
             if (method.getReturnType() == null) {
@@ -203,7 +189,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                 .getInstance(project);
         Document document = psiDocumentManager
                 .getDocument(element.getContainingFile());
-        if(document==null){
+        if (document == null) {
             return;
         }
         String splitText = extractSplitText(method, document);
@@ -236,6 +222,83 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         }
     }
 
+
+    private void handleWithLocalVariableFromVariable(PsiLocalVariable localVariable,
+                                                     Project project, PsiElement element) {
+        int currentOffset = localVariable.getTextOffset();
+
+        PsiElement parent = localVariable.getParent();
+        if (!(parent instanceof PsiDeclarationStatement)) {
+            return;
+        }
+        PsiMethod method = PsiTreeUtil.getParentOfType(localVariable, PsiMethod.class);
+        if (method == null) {
+            return;
+        }
+
+        // 创建一个列表来存储局部变量
+        PsiParameter[] parameters = method.getParameterList().getParameters();
+        List<PsiVariable> localVariables = new ArrayList<>(Arrays.asList(parameters));
+        // 遍历方法的所有元素
+        List<PsiVariable> finalLocalVariables = localVariables;
+        method.accept(new JavaRecursiveElementVisitor() {
+            @Override
+            public void visitLocalVariable(PsiLocalVariable variable) {
+                // 如果变量的位置在当前变量之前，就添加到列表中
+                if (variable.getTextOffset() < currentOffset) {
+                    finalLocalVariables.add(variable);
+                }
+            }
+        });
+        localVariables = localVariables.stream().filter(psiVariable -> PsiClassUtils.isNotSystemClass(PsiTypesUtil.getPsiClass(psiVariable.getType()))).collect(Collectors.toList());
+
+        // 创建并显示对话框
+        VariableDialog dialog = new VariableDialog(localVariables);
+        dialog.show();
+
+        if (dialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+            // 用户点击了 OK，获取选中的变量
+            String selectedVariable = dialog.getSelectedVariable();
+            if (selectedVariable == null) {
+                return;
+            }
+            PsiVariable selectedVariableObject = null;
+            for (PsiVariable variable : localVariables) {
+                if (variable.getName().equals(selectedVariable)) {
+                    selectedVariableObject = variable;
+                    break;
+                }
+            }
+            if (selectedVariableObject == null) {
+                return;
+            }
+            PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
+            Document document = psiDocumentManager.getDocument(element.getContainingFile());
+            if (document == null) {
+                return;
+            }
+            String splitText = extractSplitText(method, document);
+
+            boolean hasGuava = PsiToolUtils.checkGuavaExist(project, element);
+            PsiClass returnTypeClass = PsiTypesUtil
+                    .getPsiClass(localVariable.getType());
+
+            InsertDto dto = getBaseInsertNoReturnDto(localVariable, selectedVariableObject, splitText, hasGuava
+                    , returnTypeClass);
+            if (dto.getAddedText() != null) {
+                document.insertString(parent.getTextOffset() + parent.getText().length(),
+                        dto.getAddedText());
+            }
+            PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
+
+            if (dto.getImportList() != null) {
+                PsiToolUtils.addImportToFile(psiDocumentManager,
+                        (PsiJavaFile) element.getContainingFile(), document,
+                        dto.getImportList());
+            }
+        }
+    }
+
     @NotNull
     private InsertDto getBaseInsertDto(String splitText,
                                        boolean hasGuava, PsiParameter[] parameters1, PsiClass psiClass) {
@@ -253,12 +316,35 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                     splitText, importList, hasGuava);
         } else {
             insertText = splitText + "if (" + info.getParamName() + " == null) {"
-                + indentText(splitText) + "return null;"
-                + splitText + "}" + insertText;
+                    + indentText(splitText) + "return null;"
+                    + splitText + "}" + insertText;
             insertText += generateStringForParam(generateName, methods,
                     splitText, importList, hasGuava, info);
         }
         insertText += "return " + generateName + ";";
+        dto.setAddedText(insertText);
+        dto.setImportList(importList);
+        return dto;
+    }
+
+    @NotNull
+    private InsertDto getBaseInsertNoReturnDto(PsiLocalVariable from, PsiVariable to, String splitText,
+                                               boolean hasGuava, PsiClass psiClass) {
+
+        String generateName = from.getName();
+        InsertDto dto = new InsertDto();
+        List<PsiMethod> methods = PsiClassUtils.extractSetMethods(psiClass);
+        Set<String> importList = Sets.newHashSet();
+        GetInfo info = getGetInfo1(to);
+        // TODO: 2017/8/2 what if two class has the same name
+        String insertText = "";
+        if (info == null) {
+            insertText += generateStringForNoParam(generateName, methods,
+                    splitText, importList, hasGuava);
+        } else {
+            insertText += generateStringForParam(generateName, methods,
+                    splitText, importList, hasGuava, info);
+        }
         dto.setAddedText(insertText);
         dto.setImportList(importList);
         return dto;
@@ -284,6 +370,27 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                         break;
                     }
                 }
+            }
+        }
+        return info;
+    }
+
+    @Nullable
+    protected GetInfo getGetInfo1(PsiVariable parameter) {
+        GetInfo info = null;
+
+        PsiType type = parameter.getType();
+        PsiClass parameterClass = PsiTypesUtil.getPsiClass(type);
+        if (parameterClass == null || parameterClass.getQualifiedName()
+                .startsWith("java.")) {
+            return null;
+        } else {
+            List<PsiMethod> getMethods = PsiClassUtils
+                    .extractGetMethod(parameterClass);
+            // TODO: 2017/1/20 may be i can extract get memthod from all
+            // parameter
+            if (getMethods.size() > 0) {
+                info = buildInfo(parameter, getMethods);
             }
         }
         return info;
@@ -362,7 +469,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     }
 
     @NotNull
-    private static GetInfo buildInfo(PsiParameter parameter,
+    private static GetInfo buildInfo(PsiVariable parameter,
                                      List<PsiMethod> getMethods) {
         GetInfo info;
         info = new GetInfo();
@@ -422,9 +529,9 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             return CommonConstants.INDENTATION_CHARACTER_4_SPACE;
         }
         return text +
-            (text.contains(CommonConstants.INDENTATION_CHARACTER_TAB)
-                ? CommonConstants.INDENTATION_CHARACTER_TAB
-                : CommonConstants.INDENTATION_CHARACTER_4_SPACE);
+                (text.contains(CommonConstants.INDENTATION_CHARACTER_TAB)
+                        ? CommonConstants.INDENTATION_CHARACTER_TAB
+                        : CommonConstants.INDENTATION_CHARACTER_4_SPACE);
     }
 
     private void handleWithLocalVariable(PsiLocalVariable localVariable,
@@ -448,7 +555,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                 .getInstance(project);
         PsiFile containingFile = element.getContainingFile();
         Document document = psiDocumentManager.getDocument(containingFile);
-        if(document==null){
+        if (document == null) {
             return;
         }
         String splitText = PsiToolUtils.calculateSplitText(document, parent1.getTextOffset());
@@ -468,8 +575,8 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
 
     @NotNull
     protected String generateStringForNoParam(String generateName,
-                                            List<PsiMethod> methodList, String splitText,
-                                            Set<String> newImportList, boolean hasGuava) {
+                                              List<PsiMethod> methodList, String splitText,
+                                              Set<String> newImportList, boolean hasGuava) {
         StringBuilder builder = new StringBuilder();
         builder.append(splitText);
 
@@ -572,12 +679,10 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
                         final PsiClass psiClassOfParameter = PsiTypesUtil.getPsiClass(type);
                         if (s != null) {
                             builder.append(s);
-                        }
-                        else if (psiClassOfParameter!=null && psiClassOfParameter.isEnum()) {
+                        } else if (psiClassOfParameter != null && psiClassOfParameter.isEnum()) {
                             final PsiField[] allFields = psiClassOfParameter.getAllFields();
                             Arrays.stream(allFields).findFirst().ifPresent(field -> builder.append(psiClassOfParameter.getName()).append(".").append(field.getName()));
-                        }
-                        else {
+                        } else {
                             String realName = paramInfo.getParams().get(0).getRealName();
                             builder.append("new " + realName);
 
@@ -658,7 +763,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             }
             PsiMethod[] methods = localVarialbeContainingClass.getMethods();
             for (PsiMethod method : methods) {
-                if (method.getName().equals(CommonConstants.BUILDER_METHOD_NAME)&&method.hasModifierProperty(STATIC)) {
+                if (method.getName().equals(CommonConstants.BUILDER_METHOD_NAME) && method.hasModifierProperty(STATIC)) {
                     return true;
                 }
             }
@@ -682,7 +787,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             PsiClass psiClass = PsiTypesUtil.getPsiClass(parentMethod.getReturnType());
             if (psiClass != null) {
                 for (PsiMethod method : psiClass.getMethods()) {
-                    if (method.getName().equals(CommonConstants.BUILDER_METHOD_NAME)&&method.hasModifierProperty(STATIC)) {
+                    if (method.getName().equals(CommonConstants.BUILDER_METHOD_NAME) && method.hasModifierProperty(STATIC)) {
                         return true;
                     }
                 }

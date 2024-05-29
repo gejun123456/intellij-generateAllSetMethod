@@ -1,0 +1,5 @@
+public void create() {
+    User old = selectOldUser();
+    User user = new User();
+    user.setName(old.getName());
+}
