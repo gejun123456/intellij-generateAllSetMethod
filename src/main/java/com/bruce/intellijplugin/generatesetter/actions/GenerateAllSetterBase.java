@@ -707,13 +707,12 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         }
         builder.append(");");
 
-        generateAllHandler.appendImportList(newImportList);
-
         if (generateAllHandler.forAssertWithDefaultValues()) {
             mainBuilder.append(generateAllHandler.formatLine(builder.toString()));
         } else {
             mainBuilder.append(builder);
         }
+        generateAllHandler.appendImportList(newImportList);
     }
 
     private static void appendCollectNotEmpty(StringBuilder builder,

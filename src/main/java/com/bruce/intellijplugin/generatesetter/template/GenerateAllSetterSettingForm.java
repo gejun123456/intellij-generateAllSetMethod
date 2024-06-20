@@ -14,6 +14,7 @@
 
 package com.bruce.intellijplugin.generatesetter.template;
 
+import com.bruce.intellijplugin.generatesetter.TestEngine;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.*;
@@ -33,7 +34,10 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.ui.ClassNameReferenceEditor;
 import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.EditorTextField;
+import com.intellij.ui.EnumComboBoxModel;
+import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.components.labels.LinkListener;
@@ -46,6 +50,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -63,6 +68,8 @@ public class GenerateAllSetterSettingForm {
     private JPanel splitterPanel;
     private JCheckBox useOnlyJDKClassesCheckBox;
     private JPanel generateByTemplateSettings;
+    private JComboBox<TestEngine> preferredTestEngineComboBox;
+    private JLabel preferAssertionsFromLabel;
     private GenerateSetterState myGenerateSetterState;
     private int currentSelectedIndex = -1;
 
@@ -146,6 +153,16 @@ public class GenerateAllSetterSettingForm {
                 updateGenerateByTemplateCheckBoxState();
             }
         });
+
+        preferredTestEngineComboBox.setModel(new EnumComboBoxModel<>(TestEngine.class));
+        ListCellRendererWrapper<TestEngine> aRenderer = new ListCellRendererWrapper() {
+            @Override
+            public void customize(JList list, Object value, int index, boolean selected, boolean hasFocus) {
+                setText(((TestEngine) value).getFormattedName());
+            }
+        };
+        preferredTestEngineComboBox.setRenderer(aRenderer);
+
     }
 
     private void updateGenerateByTemplateCheckBoxState() {
@@ -221,6 +238,9 @@ public class GenerateAllSetterSettingForm {
         Boolean useJdkClassesOnly = state.getUseJdkClassesOnly();
         useOnlyJDKClassesCheckBox.setSelected(useJdkClassesOnly);
 
+        TestEngine preferredTestEngine = state.getPreferredTestEngine();
+        preferredTestEngineComboBox.setSelectedItem(preferredTestEngine);
+
         Boolean generateByTemplate = state.getGenerateByTemplate();
         enableGenerateByTemplateCheckBox.setSelected(generateByTemplate);
         updateGenerateByTemplateCheckBoxState();
@@ -252,6 +272,7 @@ public class GenerateAllSetterSettingForm {
     public GenerateSetterState getTheState() {
         myGenerateSetterState.setGenerateByTemplate(enableGenerateByTemplateCheckBox.isSelected());
         myGenerateSetterState.setUseJdkClassesOnly(useOnlyJDKClassesCheckBox.isSelected());
+        myGenerateSetterState.setPreferredTestEngine(((TestEngine) preferredTestEngineComboBox.getSelectedItem()));
         return myGenerateSetterState;
     }
 
