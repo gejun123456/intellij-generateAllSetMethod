@@ -14,6 +14,10 @@
 
 package com.bruce.intellijplugin.generatesetter.actions;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import com.bruce.intellijplugin.generatesetter.CommonConstants;
 import com.bruce.intellijplugin.generatesetter.GenerateAllHandlerAdapter;
 import com.google.common.collect.ImmutableMap;
@@ -33,10 +37,6 @@ import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.ASSERT;
 import static com.bruce.intellijplugin.generatesetter.actions.AssertAllGetterAction.TestEngine.ASSERTJ;
@@ -145,13 +145,12 @@ public class AssertAllGetterAction extends GenerateAllSetterBase {
                             .getClassesByName("Assertions", searchScope);
 
                     for (PsiClass psiClass : lists) {
-                        if ("org.assertj.core.api.Assertions".equals(psiClass.getName())) {
+                        if ("org.assertj.core.api.Assertions".equals(psiClass.getQualifiedName())) {
                             detectImportedEngines(importList);
                             return ASSERTJ;
                         }
                     }
                 }
-
 
                 if (importList != null) {
                     detectImportedEngines(importList);
