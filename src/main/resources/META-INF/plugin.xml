@@ -36,6 +36,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.8.5</strong>
+        <ul>
+            <li>[FIX]Fix assertj test engine detect defect</li>
+            <li>[NEW]Add generate setter getter converter from variable support</li>
+            <li>[IMPROVE]Optimize the indentation method</li>
+            <li>[IMPROVE]Add npe judge in method convert</li>
+        </ul>
         <strong>2.8.4</strong>
         <ul>
             <li>[NEW]Test engines support: AssertJ, JUnit 4/5, TestNG, JDK assert with auto-detection</li>
@@ -141,7 +148,7 @@
     ]]>
     </change-notes>
 
-    <idea-version since-build="183"/>
+    <idea-version since-build="213"/>
 
     <depends>com.intellij.modules.java</depends>
 
@@ -203,6 +210,10 @@
         <applicationService serviceImplementation="com.bruce.intellijplugin.generatesetter.template.GenerateSetterService"/>
 
         <applicationConfigurable instance="com.bruce.intellijplugin.generatesetter.template.MySettings"/>
+
+        <codeInsight.template.postfixTemplateProvider
+                language="JAVA"
+                implementationClass="com.bruce.intellijplugin.generatesetter.postfix.GenerateSetterPostfixTemplateProvider"/>
         <!--        <intentionAction>-->
         <!--            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateByTemplateAction</className>-->
         <!--        </intentionAction>-->

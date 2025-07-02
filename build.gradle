@@ -41,14 +41,15 @@ intellij {
 //    version 'IU-2018.3' //IntelliJ IDEA dependency
 
     pluginName.set('GenerateAllSetter')
-    version.set('2018.3')
+    version.set('2021.3')
     type.set('IC')
     downloadSources.set(true)
     updateSinceUntilBuild.set(false)
 //    plugins.set('coverage') //Bundled plugin dependencies
 //    sandboxDirectory.set('sandbox')
 //
-    plugins = ['Kotlin', 'org.nik.presentation-assistant:1.0.1', 'Lombook Plugin:0.31-2018.3', 'Groovy']
+//    'Lombook Plugin:0.31-2018.3',
+    plugins = ['com.intellij.java','Kotlin', 'org.nik.presentation-assistant:1.0.1',  'Groovy']
 //
 //    sandboxDirectory.set('sandbox')
 }

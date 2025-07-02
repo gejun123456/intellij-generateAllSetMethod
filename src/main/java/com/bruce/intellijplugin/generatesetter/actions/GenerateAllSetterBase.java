@@ -574,7 +574,7 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     }
 
     @NotNull
-    protected String generateStringForNoParam(String generateName,
+    public String generateStringForNoParam(String generateName,
                                               List<PsiMethod> methodList, String splitText,
                                               Set<String> newImportList, boolean hasGuava) {
         StringBuilder builder = new StringBuilder();
