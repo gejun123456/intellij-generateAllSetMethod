@@ -16,6 +16,20 @@
           <li>generate all setters with default values for most types including List, Set and Map</li>
           <li>generate a converter between two classes that have matching fields</li>
           <li>generate assertThat calls for all getter methods</li>
+          <li><b>Postfix templates</b> — type a variable name followed by one of the shortcuts below and press Tab/Enter to expand:
+              <ul>
+                  <li><code>.allset</code> — generate all setters with default values<br/>
+                      <code>user.allset</code> &rarr; <code>user.setName(""); user.setAge(0); ...</code></li>
+                  <li><code>.allsetn</code> — generate all setters without default values<br/>
+                      <code>user.allsetn</code> &rarr; <code>user.setName(); user.setAge(); ...</code></li>
+                  <li><code>.allget</code> — generate all getters with variable declarations<br/>
+                      <code>user.allget</code> &rarr; <code>String name = user.getName(); int age = user.getAge(); ...</code></li>
+                  <li><code>.allaccessor</code> — generate a chained accessor setter call<br/>
+                      <code>user.allaccessor</code> &rarr; <code>user.setName("").setAge(0)...;</code></li>
+                  <li><code>.allbuilder</code> — generate a full builder chain for classes that have a static <code>builder()</code> method<br/>
+                      <code>User.allbuilder</code> &rarr; <code>User.builder().name().age()....build();</code></li>
+              </ul>
+          </li>
       </ul>
 
       <p><b>Usage</b></p>
@@ -38,10 +52,13 @@
     <change-notes><![CDATA[
         <strong>2.8.5</strong>
         <ul>
+            <li>[NEW]Add postfix templates: <code>.allset</code>, <code>.allsetn</code>, <code>.allget</code>, <code>.allaccessor</code>, <code>.allbuilder</code> — type after a variable and press Tab/Enter to expand into all setter/getter/builder calls</li>
+            <li>[FIX]Postfix template expansion no longer leaves the original variable name (e.g. <code>user</code>) on the line above the generated code</li>
             <li>[FIX]Fix assertj test engine detect defect</li>
             <li>[NEW]Add generate setter getter converter from variable support</li>
             <li>[IMPROVE]Optimize the indentation method</li>
             <li>[IMPROVE]Add npe judge in method convert</li>
+            <li>[IMPROVE]Bump minimum supported IDE to 2021.3 (since-build 213)</li>
         </ul>
         <strong>2.8.4</strong>
         <ul>
