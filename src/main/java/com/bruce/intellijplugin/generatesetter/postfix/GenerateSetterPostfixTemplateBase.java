@@ -30,7 +30,10 @@ abstract class GenerateSetterPostfixTemplateBase extends PostfixTemplateWithExpr
     public void expandForChooseExpression(@NotNull PsiElement expression, @NotNull Editor editor) {
         Project project = expression.getProject();
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
-        Document document = psiDocumentManager.getDocument(expression.getContainingFile());
+        PsiFile containingFile = expression.getContainingFile();
+        if (!(containingFile instanceof PsiJavaFile)) return;
+        PsiJavaFile javaFile = (PsiJavaFile) containingFile;
+        Document document = psiDocumentManager.getDocument(javaFile);
         if (document == null) return;
 
         PsiStatement statement = PsiTreeUtil.getParentOfType(expression, PsiStatement.class);
@@ -57,7 +60,7 @@ abstract class GenerateSetterPostfixTemplateBase extends PostfixTemplateWithExpr
         int statementEnd = statementStart + statement.getText().length();
         document.replaceString(statementStart, statementEnd, insertText);
         PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
-        PsiToolUtils.addImportToFile(psiDocumentManager, (PsiJavaFile) expression.getContainingFile(), document, importList);
+        PsiToolUtils.addImportToFile(psiDocumentManager, javaFile, document, importList);
     }
 
     protected abstract List<PsiMethod> getMethods(PsiClass psiClass);
