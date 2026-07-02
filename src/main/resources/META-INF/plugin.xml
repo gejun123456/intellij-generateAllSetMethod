@@ -224,6 +224,11 @@
             <category>GenerateAllSetter</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.bruce.intellijplugin.generatesetter.actions.GenerateAIRandomValueAction</className>
+            <category>GenerateAllSetter</category>
+        </intentionAction>
+
         <applicationService serviceImplementation="com.bruce.intellijplugin.generatesetter.template.GenerateSetterService"/>
 
         <applicationConfigurable instance="com.bruce.intellijplugin.generatesetter.template.MySettings"/>
