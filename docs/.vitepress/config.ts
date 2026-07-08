@@ -60,6 +60,7 @@ const sidebarZh = [
 
 export default defineConfig({
   base: '/intellij-generateAllSetMethod/',
+  title: 'GenerateAllSetter',
 
   head: [
     ['link', { rel: 'icon', href: '/intellij-generateAllSetMethod/logo.svg' }],
