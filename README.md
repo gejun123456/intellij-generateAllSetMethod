@@ -5,6 +5,7 @@
 [![Version](http://phpstorm.espend.de/badge/9360/version)][plugin]  
 [![Downloads](http://phpstorm.espend.de/badge/9360/downloads)][plugin]
 [![Downloads last month](http://phpstorm.espend.de/badge/9360/last-month)][plugin]
+[![Documentation](https://img.shields.io/badge/docs-website-blue)](https://gejun123456.github.io/intellij-generateAllSetMethod/)
 
 - generate setter default values when cursor on local variable
 ![setter](https://raw.githubusercontent.com/gejun123456/intellij-generateAllSetMethod/master/screenshot/generateSetterPlugin.gif)
@@ -30,6 +31,9 @@ support following product build version > 141
 - download[`lastest plugin zip`][latest-release] -> <kbd>Preferences(Settings)</kbd> > <kbd>Plugins</kbd> > <kbd>Install plugin from disk...</kbd>
 
 restart **IDE**.
+
+## documentation
+- visit the documentation site: https://gejun123456.github.io/intellij-generateAllSetMethod/
 
 ## contribute 
 - import the project to Intellij

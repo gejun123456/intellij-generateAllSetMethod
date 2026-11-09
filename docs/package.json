@@ -1,0 +1,14 @@
+{
+  "name": "generate-all-setter-docs",
+  "version": "1.0.0",
+  "description": "Documentation site for GenerateAllSetter IntelliJ plugin",
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3"
+  }
+}

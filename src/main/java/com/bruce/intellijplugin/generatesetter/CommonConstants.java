@@ -33,6 +33,8 @@ public class CommonConstants {
 
     public static final String GENERATE_SETTER_METHOD_NO_DEAULT_VALUE = "";
 
+    public static final String GENERATE_AI_RANDOM_VALUE = "Generate set random value by AI";
+
     public static final String INDENTATION_CHARACTER_TAB = "\t";
     public static final String INDENTATION_CHARACTER_4_SPACE = "    ";
 }
