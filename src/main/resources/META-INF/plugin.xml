@@ -3,12 +3,11 @@
     <name>GenerateAllSetter</name>
     <vendor email="gejun123456@gmail.com" url="https://github.com/gejun123456/intellij-generateAllSetMethod">bruceGe</vendor>
     <description><![CDATA[
-
-    <p><a href="https://github.com/gejun123456/intellij-generateAllSetMethod">GitHub</a>
-      |&nbsp<a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a>
-        |&nbsp<a href="https://www.bilibili.com/video/BV11o4y1P7V7">bilibili</a></p>
-      <p> 一键调用一个对象的所有的set方法,get方法等</p>
-      <p>在方法上生成两个对象的转换</p>
+      <p>Generate all setter, getter, builder and accessor calls for a Java or Kotlin variable with one shortcut. Also generates converters between two classes that share field names, and assertThat calls for every getter.</p>
+      <p>Links: <a href="https://github.com/gejun123456/intellij-generateAllSetMethod">GitHub</a>
+        | <a href="https://github.com/gejun123456/intellij-generateAllSetMethod/issues">Issues</a>
+        | <a href="https://www.bilibili.com/video/BV11o4y1P7V7">bilibili</a></p>
+      <p>一键调用一个对象的所有的 set 方法、get 方法等，并支持在方法上生成两个对象之间的转换代码。</p>
       <br/>
       <p><b>Features</b></p>
       <ul>
@@ -50,6 +49,11 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <strong>2.8.6</strong>
+        <ul>
+            <li>[FIX]Settings page no longer throws "No display name specified" by declaring displayName on the configurable</li>
+            <li>[FIX]Avoid NullPointerException when the intention is invoked on a method without a body (abstract / interface / native methods)</li>
+        </ul>
         <strong>2.8.5</strong>
         <ul>
             <li>[NEW]Add postfix templates: <code>.allset</code>, <code>.allsetn</code>, <code>.allget</code>, <code>.allaccessor</code>, <code>.allbuilder</code> — type after a variable and press Tab/Enter to expand into all setter/getter/builder calls</li>
@@ -226,7 +230,7 @@
 
         <applicationService serviceImplementation="com.bruce.intellijplugin.generatesetter.template.GenerateSetterService"/>
 
-        <applicationConfigurable instance="com.bruce.intellijplugin.generatesetter.template.MySettings"/>
+        <applicationConfigurable instance="com.bruce.intellijplugin.generatesetter.template.MySettings" displayName="GenerateAllSetter"/>
 
         <codeInsight.template.postfixTemplateProvider
                 language="JAVA"

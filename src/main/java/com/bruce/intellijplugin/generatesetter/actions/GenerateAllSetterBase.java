@@ -175,7 +175,8 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
             }
         } else if (psiParent instanceof PsiMethod) {
             PsiMethod method = (PsiMethod) psiParent;
-            if (method.getReturnType() == null) {
+            // abstract, interface and native methods have no body to insert generated code into.
+            if (method.getReturnType() == null || method.getBody() == null) {
                 return;
             }
 
@@ -783,7 +784,8 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
     @NotNull
     private Boolean isExistBuilder(@NotNull PsiElement element) {
         PsiMethod parentMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-        if (parentMethod != null && parentMethod.getReturnType() != null) {
+        if (parentMethod != null && parentMethod.getReturnType() != null
+                && parentMethod.getBody() != null) {
             PsiClass psiClass = PsiTypesUtil.getPsiClass(parentMethod.getReturnType());
             if (psiClass != null) {
                 for (PsiMethod method : psiClass.getMethods()) {
@@ -806,6 +808,10 @@ public abstract class GenerateAllSetterBase extends PsiElementBaseIntentionActio
         PsiMethod method = (PsiMethod) parentMethod;
         // if is constructor the return type will be null.
         if (method.getReturnType() == null) {
+            return false;
+        }
+        // abstract, interface and native methods have no body to insert generated code into.
+        if (method.getBody() == null) {
             return false;
         }
         PsiClass psiClass = PsiTypesUtil.getPsiClass(method.getReturnType());

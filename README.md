@@ -37,10 +37,9 @@ restart **IDE**.
 - change the code and run the task to see the change
 
 ## my other plugins
-- MybatisCodeHelperPro  https://github.com/gejun123456/MyBatisCodeHelper-Pro
+- MybatisCodeHelperPro https://plugins.jetbrains.com/plugin/9837-mybatiscodehelperpro
 
-- StackOverFlow https://github.com/gejun123456/IntellijGoToStackOverFlow
-
+- HotSwapHelper https://github.com/gejun123456/HotSwapHelper
 [release-img]: https://img.shields.io/github/release/gejun123456/intellij-generateAllSetMethod.svg
 [latest-release]: https://github.com/gejun123456/intellij-generateAllSetMethod/releases/latest
 [plugin-img]: https://img.shields.io/badge/plugin-9360-orange.svg
